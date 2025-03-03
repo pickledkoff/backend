@@ -1,9 +1,14 @@
 export default function handler(req, res) {
-       const { apartmentPrice, percentFinancing } = req.body;
+  // Parse the input data from the request
+  const { apartmentPrice, percentFinancing } = req.body;
 
-       // Dummy calculation
-       const financingAmount = (apartmentPrice * (percentFinancing / 100)).toFixed(2);
+  // Create a response object with the message and input data
+  const response = {
+    message: "Great success!",
+    apartmentPrice,
+    percentFinancing
+  };
 
-       // Return response
-       res.status(200).json({ financingAmount });
-     }
+  // Send the response as JSON
+  res.status(200).json(response);
+}
