@@ -10,5 +10,5 @@ export default function handler(req, res) {
   };
 
   // Send the response as JSON
-  res.status(201).json(response);
+  res.status(200).json(response);
 }
