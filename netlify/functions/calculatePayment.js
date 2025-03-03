@@ -1,39 +1,48 @@
 export async function handler(event, context) {
-  console.log("Received event:", event);
-  console.log("Received context:", context);
-  
+  // Handle preflight (OPTIONS) request
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',          // Allow requests from all domains
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
+      },
+      body: ''
+    };
+  }
+
+  // Proceed with main request handling
   try {
-    if (!event.body) {
-      console.log("No body provided in request");
-      throw new Error("Request body is missing");
-    }
-    
-    console.log("Raw event.body:", event.body);
+    // Add any key-value pairs you'd like to parse
     const data = JSON.parse(event.body);
-    console.log("Parsed data:", data);
-    
-    const { apartmentPrice, percentFinancing } = data;
-    console.log("Apartment Price:", apartmentPrice);
-    console.log("Percent Financing:", percentFinancing);
-    
+    const { apartmentPrice, percentFinancing } = data || {};
+
+    // Log or use these values as necessary
+    console.log('apartmentPrice:', apartmentPrice);
+    console.log('percentFinancing:', percentFinancing);
+
     const response = {
       message: "Great success!",
       apartmentPrice,
       percentFinancing
     };
-    
-    console.log("Response object:", response);
-    
+
+    // Add the same CORS headers to the final response
     return {
       statusCode: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+      },
       body: JSON.stringify(response)
     };
   } catch (error) {
-    console.error("Error caught in handler:", error);
+    console.error('Error:', error);
     return {
       statusCode: 400,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+      },
       body: JSON.stringify({ error: error.message })
     };
   }
