@@ -1,17 +1,24 @@
-export default function handler(req, res) {
-  // Get inputs from the request body
-  const { apartmentPrice, percentFinancing } = req.body || {};
-  console.log("Request Body:", req.body);
+export async function handler(event, context) {
+  try {
+    const data = JSON.parse(event.body);
+    const { apartmentPrice, percentFinancing } = data;
 
-  // Build a simple response object
-  const response = {
-    message: "Great success!",
-    apartmentPrice,
-    percentFinancing,
-  };
-  
-  console.log("Response:", response);
+    const response = {
+      message: "Great success!",
+      apartmentPrice,
+      percentFinancing
+    };
 
-  // Return the response as JSON
-  res.status(200).json(response);
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(response)
+    };
+  } catch (error) {
+    return {
+      statusCode: 400,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: error.message })
+    };
+  }
 }
