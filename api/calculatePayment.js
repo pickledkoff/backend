@@ -1,7 +1,7 @@
    export default function handler(req, res) {
      // Log the body of the incoming request
      console.log('Request Body:', req.body);
-
+ 
      const { apartmentPrice, percentFinancing } = req.body;
 
      // Log extracted parameters
