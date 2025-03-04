@@ -48,42 +48,43 @@ export function generatePDF(res, planData) {
   });
 
   doc.fontSize(14).text('Payment Plan', { align: 'center' });
-  doc.moveDown();
+  doc.moveDown(1.5);
 
-  const colX = [doc.page.margins.left, 150, 250, 350, 450];
-  const colWidth = [100, 100, 100, 100, 100];
+  const colX = [doc.page.margins.left, 160, 280, 360, 460];
+  const colWidth = [110, 120, 80, 100, 90];
 
   // Table headers
   doc.fontSize(11).font('Helvetica-Bold')
-    .text('Payment Stage', colX[0], doc.y, { width: colWidth[0], continued: true })
-    .text('Amount to Pay (ILS)', colX[1], doc.y, { width: colWidth[1], continued: true, align: 'right' })
-    .text('Amount to Pay (USD)', colX[2], doc.y, { width: colWidth[2], continued: true, align: 'right' })
-    .text('Percent', colX[3], doc.y, { width: colWidth[3], continued: true, align: 'right' })
-    .text('Cumulative (USD)', colX[4], doc.y, { align: 'right' });
+    .text('Payment Stage', colX[0], doc.y, { width: colWidth[0] })
+    .text('Amount to Pay (ILS)', colX[1], doc.y, { width: colWidth[1], align: 'right' })
+    .text('Amount to Pay (USD)', colX[2], doc.y, { width: colWidth[2], align: 'right' })
+    .text('Percent', colX[3], doc.y, { width: colWidth[3], align: 'right' })
+    .text('Cumulative (USD)', colX[4], doc.y, { width: colWidth[4], align: 'right' });
 
-  doc.moveTo(colX[0], doc.y).lineTo(doc.page.width - doc.page.margins.right, doc.y).stroke();
+  doc.moveTo(colX[0], doc.y + 5).lineTo(doc.page.width - doc.page.margins.right, doc.y + 5).stroke();
   doc.moveDown();
 
   doc.font('Helvetica').fontSize(10);
   planData.rows.forEach((row) => {
-    doc.text(row.paymentStage, colX[0], doc.y, { width: colWidth[0], continued: true })
-      .text(`₪${formatNumber(row.amountToPayILS)}`, colX[1], doc.y, { width: colWidth[1], continued: true, align: 'right' })
-      .text(`$${formatNumber(row.amountToPayUSD)}`, colX[2], doc.y, { width: colWidth[2], continued: true, align: 'right' })
-      .text(row.percent, colX[3], doc.y, { width: colWidth[3], continued: true, align: 'right' })
-      .text(`$${formatNumber(row.cumulative)}`, colX[4], doc.y, { align: 'right' });
-    doc.moveDown(0.5);
+    const y = doc.y;
+    doc.text(row.paymentStage, colX[0], y, { width: colWidth[0] })
+      .text(`₪${formatNumber(row.amountToPayILS)}`, colX[1], y, { width: colWidth[1], align: 'right' })
+      .text(`$${formatNumber(row.amountToPayUSD)}`, colX[2], y, { width: colWidth[2], align: 'right' })
+      .text(row.percent, colX[3], y, { width: colWidth[3], align: 'right' })
+      .text(`$${formatNumber(row.cumulative)}`, colX[4], y, { width: colWidth[4], align: 'right' });
+    doc.moveDown(0.75);
   });
 
   doc.moveDown(1)
     .font('Helvetica-Bold')
-    .text('Total', colX[0], doc.y, { width: colWidth[0], continued: true })
-    .text(`₪${formatNumber(planData.totalILS)}`, colX[1], doc.y, { width: colWidth[1], continued: true, align: 'right' })
-    .text(`$${formatNumber(planData.totalUSD)}`, colX[2], doc.y, { width: colWidth[2], continued: true, align: 'right' })
+    .text('Total', colX[0], doc.y, { width: colWidth[0] })
+    .text(`₪${formatNumber(planData.totalILS)}`, colX[1], doc.y, { width: colWidth[1], align: 'right' })
+    .text(`$${formatNumber(planData.totalUSD)}`, colX[2], doc.y, { width: colWidth[2], align: 'right' })
     .text('100.00%', colX[3], doc.y, { align: 'right' });
 
   doc.moveDown(2)
     .fontSize(11)
-    .text('Delivery time', colX[0], doc.y, { continued: true })
+    .text('Delivery time', colX[0], doc.y)
     .text('36 months', colX[1], doc.y);
 
   doc.end();
