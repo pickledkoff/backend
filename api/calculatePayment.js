@@ -1,42 +1,29 @@
 import calculatePaymentPlan from "../main/utils/calculations";
 
 export default async function handler(req, res) {
-  // Handle preflight requests
-  if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-    return res.status(200).json({});
-  }
-  
-  // Always attach CORS header
+  // Set the CORS header for every response right away.
   res.setHeader("Access-Control-Allow-Origin", "*");
 
-  // Only allow POST requests
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    return res.status(200).end();
+  }
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    // Process req.body. Check for string and parse accordingly.
-    let data;
-    if (typeof req.body === "string") {
-      data = JSON.parse(req.body);
-    } else {
-      data = req.body;
-    }
-    
+    let data = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
     const { apartmentPrice, percentFinancing, currency, conversionRate } = data;
     console.log("Received apartmentPrice:", apartmentPrice);
     console.log("Received percentFinancing:", percentFinancing);
     console.log("Received currency:", currency);
-    console.log("Received conversionRate:", data);
+    console.log("Received conversionRate:", conversionRate);
 
-    // Call your calculation helper function with proper parameters.
-    // Convert values to numbers as needed.
     const planData = calculatePaymentPlan(Number(apartmentPrice), Number(conversionRate), currency);
 
-    // Build the response object including conversion data if desired
     const responseData = {
       message: "super test",
       apartmentPrice,
