@@ -38,7 +38,8 @@ export function calculatePaymentPlan(apartmentPrice, conversionRate, userCurrenc
 }
 
 export function generatePDF(res, planData) {
-  const doc = new PDFDocument();
+  // Create a new PDF document with A4 size and standard margins
+  const doc = new PDFDocument({ size: 'A4', margin: 30 });
   let buffers = [];
   
   doc.on('data', buffers.push.bind(buffers));
@@ -52,34 +53,41 @@ export function generatePDF(res, planData) {
   doc.fontSize(12).text('Payment Plan', { align: 'center' });
   doc.moveDown();
 
+  const colX = [30, 170, 310, 400, 470]; // Adjusted for margins
+  const colWidth = [140, 140, 90, 70, 65]; // Widths based on available space
+
   // Table headers
   doc.fontSize(10)
-    .text('Payment stage', 50, doc.y, { continued: true })
-    .text('Amount to pay', 150, doc.y, { continued: true, align: 'right' })
-    .text('In dollars', 250, doc.y, { continued: true, align: 'right' })
-    .text('Percent', 350, doc.y, { continued: true, align: 'right' })
-    .text('Cumulative', 450, doc.y, { align: 'right' });
+    .text('Payment stage', colX[0], doc.y, { width: colWidth[0], continued: true })
+    .text('Amount to pay', colX[1], doc.y, { width: colWidth[1], continued: true, align: 'right' })
+    .text('In dollars', colX[2], doc.y, { width: colWidth[2], continued: true, align: 'right' })
+    .text('Percent', colX[3], doc.y, { width: colWidth[3], continued: true, align: 'right' })
+    .text('Cumulative', colX[4], doc.y, { width: colWidth[4], align: 'right' });
+
+  // Draw a line below headers
+  doc.moveTo(colX[0], doc.y).lineTo(555, doc.y).stroke();
 
   // Table rows
   planData.rows.forEach((row) => {
-    doc.text(row.paymentStage, 50, doc.y, { continued: true })
-      .text(row.amountToPayILS, 150, doc.y, { continued: true, align: 'right' })
-      .text(row.amountToPayUSD, 250, doc.y, { continued: true, align: 'right' })
-      .text(row.percent, 350, doc.y, { continued: true, align: 'right' })
-      .text(row.cumulative, 450, doc.y, { align: 'right' });
+     doc.text(row.paymentStage, colX[0], doc.y, { width: colWidth[0], continued: true })
+      .text(row.amountToPayILS, colX[1], doc.y, { width: colWidth[1], continued: true, align: 'right' })
+      .text(row.amountToPayUSD, colX[2], doc.y, { width: colWidth[2], continued: true, align: 'right' })
+      .text(row.percent, colX[3], doc.y, { width: colWidth[3], continued: true, align: 'right' })
+      .text(row.cumulative, colX[4], doc.y, { width: colWidth[4], align: 'right' });
+    doc.moveDown(0.5);
   });
 
   // Totals
-  doc.moveDown()
-      .text('Total', 50, doc.y, { continued: true })
-      .text(planData.totalILS, 150, doc.y, { continued: true, align: 'right' })
-      .text(planData.totalUSD, 250, doc.y, { continued: true, align: 'right' })
-      .text('100.00%', 350, doc.y, { align: 'right' });
+  doc.moveDown(1)
+    .text('Total', colX[0], doc.y, { width: colWidth[0], continued: true })
+    .text(planData.totalILS, colX[1], doc.y, { width: colWidth[1], continued: true, align: 'right' })
+    .text(planData.totalUSD, colX[2], doc.y, { width: colWidth[2], continued: true, align: 'right' })
+    .text('100.00%', colX[3], doc.y, { width: colWidth[3], align: 'right' });
 
   // Delivery time
   doc.moveDown(2)
-      .text('Delivery time', 50, doc.y, { continued: true })
-      .text('36 months', 150, doc.y);
+    .text('Delivery time', colX[0], doc.y, { width: colWidth[0], continued: true })
+    .text('36 months', colX[1], doc.y, { width: colWidth[1] });
 
   doc.end();
 }
