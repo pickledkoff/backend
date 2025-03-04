@@ -1,7 +1,40 @@
-import PDFDocument from 'pdfkit';
+export function calculatePaymentPlan(apartmentPrice, conversionRate, userCurrency) {
+  const totalPriceUSD = userCurrency === 'USD' ? apartmentPrice : apartmentPrice / conversionRate;
+  const totalPriceILS = userCurrency === 'USD' ? apartmentPrice * conversionRate : apartmentPrice;
+
+  const paymentStages = [
+    { stage: "At Signing of Contract", percent: 0.15 },
+    { stage: "6 months", percent: 0.12 },
+    { stage: "12 months", percent: 0.12 },
+    { stage: "18 months", percent: 0.12 },
+    { stage: "24 months", percent: 0.11 },
+    { stage: "30 months", percent: 0.11 },
+    { stage: "36 Months", percent: 0.12 },
+    { stage: "Delivery of the apartment", percent: 0.15 },
+  ];
+
+  let cumulativeUSD = 0;
+  const rows = paymentStages.map((stage) => {
+    const amountToPayUSD = totalPriceUSD * stage.percent;
+    const amountToPayILS = totalPriceILS * stage.percent;
+    cumulativeUSD += amountToPayUSD;
+
+    return {
+      paymentStage: stage.stage,
+      amountToPayILS: amountToPayILS.toFixed(2),
+      amountToPayUSD: amountToPayUSD.toFixed(2),
+      percent: (stage.percent * 100).toFixed(2) + '%',
+      cumulative: cumulativeUSD.toFixed(2)
+    };
+  });
+
+  const totalILS = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayILS), 0).toFixed(2);
+  const totalUSD = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayUSD), 0).toFixed(2);
+
+  return { totalPriceUSD, totalPriceILS, rows, totalILS, totalUSD };
+}
 
 export function generatePDF(res, planData) {
-  // Initialize PDFDocument with A4 size and margin
   const doc = new PDFDocument({ size: 'A4', margin: 50 });
   let buffers = [];
 
@@ -13,15 +46,12 @@ export function generatePDF(res, planData) {
     res.end(pdfData);
   });
 
-  // Title
   doc.fontSize(14).text('Payment Plan', { align: 'center' });
   doc.moveDown();
 
-  // Define column positions and widths
   const colX = [doc.page.margins.left, 150, 250, 350, 450];
   const colWidth = [100, 100, 100, 100, 100];
 
-  // Draw table headers
   doc.fontSize(11).font('Helvetica-Bold')
     .text('Payment Stage', colX[0], doc.y, { width: colWidth[0], continued: true })
     .text('Amount to Pay (ILS)', colX[1], doc.y, { width: colWidth[1], continued: true, align: 'right' })
@@ -29,11 +59,9 @@ export function generatePDF(res, planData) {
     .text('Percent', colX[3], doc.y, { width: colWidth[3], continued: true, align: 'right' })
     .text('Cumulative (USD)', colX[4], doc.y, { align: 'right' });
 
-  // Draw header line
   doc.moveTo(colX[0], doc.y).lineTo(doc.page.width - doc.page.margins.right, doc.y).stroke();
   doc.moveDown();
 
-  // Draw table rows
   doc.font('Helvetica').fontSize(10);
   planData.rows.forEach((row) => {
     doc.text(row.paymentStage, colX[0], doc.y, { width: colWidth[0], continued: true })
@@ -41,10 +69,9 @@ export function generatePDF(res, planData) {
       .text(row.amountToPayUSD, colX[2], doc.y, { width: colWidth[2], continued: true, align: 'right' })
       .text(row.percent, colX[3], doc.y, { width: colWidth[3], continued: true, align: 'right' })
       .text(row.cumulative, colX[4], doc.y, { align: 'right' });
-    doc.moveDown(0.5); // Add spacing between rows
+    doc.moveDown(0.5);
   });
 
-  // Draw total row
   doc.moveDown(1)
     .font('Helvetica-Bold')
     .text('Total', colX[0], doc.y, { width: colWidth[0], continued: true })
@@ -52,7 +79,6 @@ export function generatePDF(res, planData) {
     .text(planData.totalUSD, colX[2], doc.y, { width: colWidth[2], continued: true, align: 'right' })
     .text('100.00%', colX[3], doc.y, { align: 'right' });
 
-  // Draw delivery time
   doc.moveDown(2)
     .fontSize(11)
     .text('Delivery time', colX[0], doc.y, { continued: true })
