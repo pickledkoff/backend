@@ -1,4 +1,4 @@
-import calculatePaymentPlan from '../utils/calculations';
+import calculatePaymentPlan from '../utils/calculations.js';
 export default async function handler(req, res) {
   // Handle preflight requests
   if (req.method === "OPTIONS") {
