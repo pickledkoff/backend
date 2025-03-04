@@ -1,3 +1,5 @@
+import calculatePaymentPlan from './calculations';  // Adjust the path if needed
+
 export default async function handler(req, res) {
   // Handle preflight requests
   if (req.method === "OPTIONS") {
@@ -24,17 +26,23 @@ export default async function handler(req, res) {
       data = req.body;
     }
     
-    const { apartmentPrice, percentFinancing, currency } = data;
+    const { apartmentPrice, percentFinancing, currency, conversionRate } = data;
     console.log("Received apartmentPrice:", apartmentPrice);
     console.log("Received percentFinancing:", percentFinancing);
     console.log("Received currency:", currency);
-    
+    console.log("Received conversionRate:", data);
+
+    // Call your calculation helper function with proper parameters.
+    // Convert values to numbers as needed.
+    const planData = calculatePaymentPlan(Number(apartmentPrice), Number(conversionRate), currency);
+
     // Build the response object including conversion data if desired
     const responseData = {
       message: "super test",
       apartmentPrice,
       percentFinancing,
       currency,
+      ...planData,
     };
     
     console.log("Sending response:", responseData);
