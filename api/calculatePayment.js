@@ -30,16 +30,20 @@ export default async function handler(req, res) {
     console.log("Received percentFinancing:", percentFinancing);
     console.log("Received currency:", currency);
 
+  const conversionRate = Number(payload.conversionRate); // Make sure the frontend sends conversionRate
+  const apartmentPriceNum = Number(apartmentPrice);
+  const planData = calculatePaymentPlan(apartmentPriceNum, conversionRate, currency);
+
     // Build the response object including conversion data if desired
-    const responseData = {
-      message: "super test",
-      apartmentPrice,
-      percentFinancing,
-      currency,
-    };
-    
-    console.log("Sending response:", responseData);
-    return res.status(200).json(responseData);
+  const responseData = {
+  message: "Calculation complete",
+  ...planData,
+  apartmentPrice,
+  percentFinancing,
+  currency
+};
+return res.status(200).json(responseData);
+   
   } catch (error) {
     console.error("Error caught in function:", error);
     return res.status(400).json({ error: error.message });
