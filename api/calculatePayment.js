@@ -1,23 +1,35 @@
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  // Handle preflight requests
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    return res.status(200).json({});
   }
   
-  console.log("Received request body:", req.body);
+  // For non-OPTIONS requests, also include the header in the response
+  res.setHeader("Access-Control-Allow-Origin", "*");
+
+  // Proceed with POST handling
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
   
-  // Use the exact same keys from the request
-  const { apartmentPrice, percentFinancing } = req.body;
+  try {
+    const data = JSON.parse(req.body);
+    const { purchasePrice, financePercent, currency } = data;
+    
+    const response = {
+      message: "super test",
+      purchasePrice,
+      financePercent,
+      currency
+    };
+    
+    return res.status(200).json(response);
   
-  // Build the response object using the data received
-  const response = {
-    message: "super test",
-    apartmentPrice,
-    percentFinancing,
-    // Optionally, you can also include a default currency if needed
-    currency: req.body.currency || "USD"
-  };
-  
-  console.log("Sending response:", response);
-  
-  return res.status(200).json(response);
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(400).json({ error: error.message });
+  }
 }
