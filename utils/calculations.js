@@ -48,10 +48,10 @@ export function generatePDF(res, planData) {
   });
 
   doc.fontSize(14).text('Payment Plan', { align: 'center' });
-  doc.moveDown(1.5);
+  doc.moveDown(2);
 
-  const colX = [doc.page.margins.left, 160, 280, 360, 460];
-  const colWidth = [110, 120, 80, 100, 90];
+  const colX = [doc.page.margins.left, 150, 280, 360, 450];
+  const colWidth = [120, 130, 80, 80, 90];
 
   // Table headers
   doc.fontSize(11).font('Helvetica-Bold')
