@@ -1,5 +1,4 @@
-import calculatePaymentPlan from '../utils/calculations.js';
-
+import { calculatePaymentPlan, generatePDF } from '../utils/calculations.js';
 export default async function handler(req, res) {
   // Handle preflight requests
   if (req.method === "OPTIONS") {
@@ -37,14 +36,15 @@ export default async function handler(req, res) {
     const planData = calculatePaymentPlan(apartmentPriceNum, conversionRateNum, currency);
 
     // Build the response object including conversion data
-    const responseData = {
-      message: "Calculation complete",
-      ...planData,
-      apartmentPrice,
-      percentFinancing,
-      currency
-    };
-    return res.status(200).json(responseData);
+    //const responseData = {
+    /  message: "Calculation complete",
+    //  ...planData,
+    //  apartmentPrice,
+      //percentFinancing,
+     // currency
+   // };
+   // return res.status(200).json(responseData);
+   generatePDF(res, planData);
   } catch (error) {
     console.error("Error caught in function:", error);
     return res.status(400).json({ error: error.message });
