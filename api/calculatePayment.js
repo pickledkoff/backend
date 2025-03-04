@@ -1,45 +1,57 @@
-import calculatePaymentPlan from "../main/utils/calculations";
-
 export default async function handler(req, res) {
-  // Always set CORS header immediately
-  res.setHeader("Access-Control-Allow-Origin", "*");
-
-  // Handle preflight request first
+  // Handle preflight requests
   if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-    return res.status(200).end();
+    return res.status(200).json({});
   }
+  
+  // Always attach CORS header
+  res.setHeader("Access-Control-Allow-Origin", "*");
 
+  // Only allow POST requests
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    let data =
-      typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-    const { apartmentPrice, percentFinancing, currency, conversionRate } = data;
+    // Process req.body. Check for string and parse accordingly.
+    let data;
+    if (typeof req.body === "string") {
+      data = JSON.parse(req.body);
+    } else {
+      data = req.body;
+    }
 
+
+
+
+    const { apartmentPrice, percentFinancing, currency } = data;
     console.log("Received apartmentPrice:", apartmentPrice);
     console.log("Received percentFinancing:", percentFinancing);
     console.log("Received currency:", currency);
-    console.log("Received conversionRate:", conversionRate);
 
-    // Call your helper function (ensure this import is valid)
-    const planData = calculatePaymentPlan(
-      Number(apartmentPrice),
-      Number(conversionRate),
-      currency
-    );
-
+    // Build the URL for currency conversion (using USD -> ILS conversion)
+    // "apartmentPrice" is used as the amount.
+    const conversionURL = `https://v6.exchangerate-api.com/v6/0b06fd6463bc1c47e6f7e790/pair/USD/ILS/${apartmentPrice}`;
+    const conversionResponse = await fetch(conversionURL);
+    const conversionData = await conversionResponse.json();
+    
+    // Log the conversion rate and conversion result from the API response
+    console.log("conversion_rate:", conversionData.conversion_rate);
+    console.log("conversion_result:", conversionData.conversion_result);
+    
+    // Build the response object including conversion data if desired
     const responseData = {
       message: "super test",
       apartmentPrice,
       percentFinancing,
       currency,
-      ...planData,
+      conversion_rate: conversionData.conversion_rate,
+      conversion_result: conversionData.conversion_result
     };
-
+    
     console.log("Sending response:", responseData);
     return res.status(200).json(responseData);
   } catch (error) {
