@@ -1,4 +1,39 @@
 import PDFDocument from 'pdfkit';
+export function calculatePaymentPlan(apartmentPrice, conversionRate, userCurrency) {
+  const totalPriceUSD = userCurrency === 'USD' ? apartmentPrice : apartmentPrice / conversionRate;
+  const totalPriceILS = userCurrency === 'USD' ? apartmentPrice * conversionRate : apartmentPrice;
+
+  const paymentStages = [
+    { stage: "At Signing of Contract", percent: 0.15 },
+    { stage: "6 months", percent: 0.12 },
+    { stage: "12 months", percent: 0.12 },
+    { stage: "18 months", percent: 0.12 },
+    { stage: "24 months", percent: 0.11 },
+    { stage: "30 months", percent: 0.11 },
+    { stage: "36 Months", percent: 0.12 },
+    { stage: "Delivery of the apartment", percent: 0.15 },
+  ];
+
+  let cumulativeUSD = 0;
+  const rows = paymentStages.map((stage) => {
+    const amountToPayUSD = totalPriceUSD * stage.percent;
+    const amountToPayILS = totalPriceILS * stage.percent;
+    cumulativeUSD += amountToPayUSD;
+
+    return {
+      paymentStage: stage.stage,
+      amountToPayILS: amountToPayILS.toFixed(2),
+      amountToPayUSD: amountToPayUSD.toFixed(2),
+      percent: (stage.percent * 100).toFixed(2) + '%',
+      cumulative: cumulativeUSD.toFixed(2)
+    };
+  });
+
+  const totalILS = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayILS), 0).toFixed(2);
+  const totalUSD = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayUSD), 0).toFixed(2);
+
+  return { totalPriceUSD, totalPriceILS, rows, totalILS, totalUSD };
+}
 
 export function generatePDF(res, planData) {
   const doc = new PDFDocument({ size: 'A4', margin: 50 });
