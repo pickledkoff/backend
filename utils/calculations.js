@@ -1,3 +1,4 @@
+import PDFDocument from 'pdfkit';
 export function calculatePaymentPlan(apartmentPrice, conversionRate, userCurrency) {
   const totalPriceUSD = userCurrency === 'USD' ? apartmentPrice : apartmentPrice / conversionRate;
   const totalPriceILS = userCurrency === 'USD' ? apartmentPrice * conversionRate : apartmentPrice;
