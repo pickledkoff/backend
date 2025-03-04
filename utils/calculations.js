@@ -1,4 +1,4 @@
-export function calculatePaymentPlan(apartmentPrice, conversionRate, userCurrency) {
+function calculatePaymentPlan(apartmentPrice, conversionRate, userCurrency) {
   let totalPriceUSD, totalPriceILS;
   if (userCurrency === 'USD') {
     totalPriceUSD = apartmentPrice;
@@ -26,7 +26,7 @@ export function calculatePaymentPlan(apartmentPrice, conversionRate, userCurrenc
     cumulative: cumulativeUSD
   });
   
-  // TODO: Add additional rows (total 12 rows) following your desired logic.
+  // TODO: Add additional rows (total 12 rows) as needed.
   
   return { totalPriceUSD, totalPriceILS, header, rows };
 }
