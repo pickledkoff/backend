@@ -107,12 +107,12 @@ export function generatePDF(res, planData) {
   }
   doc.font('Helvetica-Bold');
   doc.text('Total', colX[0] + 5, currentY + 5, { width: colWidths[0] - 10 });
-  doc.text(`₪${formatNumber(planData.totalILS)}`, colX[1] + 5, currentY + 5, { width: colWidths[1] - 10, align: 'right' });
-  doc.text(`$${formatNumber(planData.totalUSD)}`, colX[2] + 5, currentY + 5, { width: colWidths[2] - 10, align: 'right' });
+  doc.text(formatNumber(row.amountToPayILS), colX[1] + 5, currentY + 5, { width: colWidths[1] - 10, align: 'center' });
+  doc.text(`$${formatNumber(planData.totalUSD)}`, colX[2] + 5, currentY + 5, { width: colWidths[2] - 10, align: 'center' });
   // Leave Percent blank or you can add a note:
-  doc.text('', colX[3] + 5, currentY + 5, { width: colWidths[3] - 10, align: 'right' });
+  doc.text('', colX[3] + 5, currentY + 5, { width: colWidths[3] - 10, align: 'center' });
   // You may want to leave cumulative blank or repeat last row:
-  doc.text(`$${formatNumber(planData.totalUSD)}`, colX[4] + 5, currentY + 5, { width: colWidths[4] - 10, align: 'right' });
+  doc.text(`$${formatNumber(planData.totalUSD)}`, colX[4] + 5, currentY + 5, { width: colWidths[4] - 10, align: 'center' });
 
   currentY += totalsRowHeight;
   
