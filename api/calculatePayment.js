@@ -35,15 +35,7 @@ export default async function handler(req, res) {
     const apartmentPriceNum = Number(apartmentPrice);
     const planData = calculatePaymentPlan(apartmentPriceNum, conversionRateNum, currency);
 
-    // Build the response object including conversion data
-    //const responseData = {
-    //  message: "Calculation complete",
-    //  ...planData,
-    //  apartmentPrice,
-      //percentFinancing,
-     // currency
-   // };
-   // return res.status(200).json(responseData);
+    // Generate PDF
    generatePDF(res, planData);
   } catch (error) {
     console.error("Error caught in function:", error);
