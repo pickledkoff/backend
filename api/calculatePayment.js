@@ -1,16 +1,12 @@
 export default async function handler(req, res) {
-  // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
   
-  // Log the request for debugging
-  console.log("Received request method:", req.method);
-  console.log("Received request body:", req.body);
-
-  // Extract fields from the request body
+  console.log("Received request body:", req.body); // Debug logging
+  
   const { purchasePrice, financePercent, currency } = req.body;
-
+  
   // Build the response object
   const response = {
     message: "super test",
@@ -18,7 +14,8 @@ export default async function handler(req, res) {
     financePercent,
     currency
   };
-
-  // Return the response as JSON
+  
+  console.log("Sending response:", response); // More logging
+  
   return res.status(200).json(response);
 }
