@@ -37,7 +37,7 @@ export default async function handler(req, res) {
 
     // Build the response object including conversion data
     //const responseData = {
-    /  message: "Calculation complete",
+    //  message: "Calculation complete",
     //  ...planData,
     //  apartmentPrice,
       //percentFinancing,
