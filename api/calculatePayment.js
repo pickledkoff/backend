@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
     return res.status(200).json({});
   }
-
+  
   // Always attach CORS header
   res.setHeader("Access-Control-Allow-Origin", "*");
 
@@ -16,6 +16,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Process req.body. Check for string and parse accordingly.
     let data;
     if (typeof req.body === "string") {
       data = JSON.parse(req.body);
@@ -23,24 +24,33 @@ export default async function handler(req, res) {
       data = req.body;
     }
     
-    console.log("Parsed data:", data);
-    
-    // Use the correct keys coming from your front end
     const { apartmentPrice, percentFinancing, currency } = data;
+    console.log("Received apartmentPrice:", apartmentPrice);
+    console.log("Received percentFinancing:", percentFinancing);
+    console.log("Received currency:", currency);
     
-    console.log("apartmentPrice:", apartmentPrice);
-    console.log("percentFinancing:", percentFinancing);
-    console.log("currency:", currency);
-
-    const response = {
+    // Build the URL for currency conversion (using USD -> ILS conversion)
+    // "apartmentPrice" is used as the amount.
+    const conversionURL = `https://v6.exchangerate-api.com/v6/0b06fd6463bc1c47e6f7e790/pair/USD/ILS/${apartmentPrice}`;
+    const conversionResponse = await fetch(conversionURL);
+    const conversionData = await conversionResponse.json();
+    
+    // Log the conversion rate and conversion result from the API response
+    console.log("conversion_rate:", conversionData.conversion_rate);
+    console.log("conversion_result:", conversionData.conversion_result);
+    
+    // Build the response object including conversion data if desired
+    const responseData = {
       message: "super test",
       apartmentPrice,
       percentFinancing,
-      currency: currency || "USD"
+      currency,
+      conversion_rate: conversionData.conversion_rate,
+      conversion_result: conversionData.conversion_result
     };
-
-    console.log("Sending response:", response);
-    return res.status(200).json(response);
+    
+    console.log("Sending response:", responseData);
+    return res.status(200).json(responseData);
   } catch (error) {
     console.error("Error caught in function:", error);
     return res.status(400).json({ error: error.message });
