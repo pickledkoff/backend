@@ -24,32 +24,17 @@ export default async function handler(req, res) {
       data = req.body;
     }
 
-
-
-
     const { apartmentPrice, percentFinancing, currency } = data;
     console.log("Received apartmentPrice:", apartmentPrice);
     console.log("Received percentFinancing:", percentFinancing);
     console.log("Received currency:", currency);
 
-    // Build the URL for currency conversion (using USD -> ILS conversion)
-    // "apartmentPrice" is used as the amount.
-    const conversionURL = `https://v6.exchangerate-api.com/v6/0b06fd6463bc1c47e6f7e790/pair/USD/ILS/${apartmentPrice}`;
-    const conversionResponse = await fetch(conversionURL);
-    const conversionData = await conversionResponse.json();
-    
-    // Log the conversion rate and conversion result from the API response
-    console.log("conversion_rate:", conversionData.conversion_rate);
-    console.log("conversion_result:", conversionData.conversion_result);
-    
     // Build the response object including conversion data if desired
     const responseData = {
       message: "super test",
       apartmentPrice,
       percentFinancing,
       currency,
-      conversion_rate: conversionData.conversion_rate,
-      conversion_result: conversionData.conversion_result
     };
     
     console.log("Sending response:", responseData);
