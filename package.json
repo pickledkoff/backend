@@ -1,8 +1,8 @@
- {
-     "name": "vercel-backend-project",
-     "version": "1.0.0",
-     "type": "module",
-     "dependencies": {
-       "pdfkit": "^0.12.1" // Add this line with the latest version
-     }
-   }
+{
+  "name": "vercel-backend-project",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "pdfkit": "^0.12.1"
+  }
+}
