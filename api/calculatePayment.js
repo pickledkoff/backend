@@ -3,19 +3,21 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
   
- // console.log("Received request body:", req.body); // Debug logging
+  console.log("Received request body:", req.body);
   
-  const { purchasePrice, financePercent, currency } = req.body;
+  // Use the exact same keys from the request
+  const { apartmentPrice, percentFinancing } = req.body;
   
-  // Build the response object
+  // Build the response object using the data received
   const response = {
     message: "super test",
-    purchasePrice,
-    financePercent,
-    currency
+    apartmentPrice,
+    percentFinancing,
+    // Optionally, you can also include a default currency if needed
+    currency: req.body.currency || "USD"
   };
   
-  console.log("Sending response:", response); // More logging
+  console.log("Sending response:", response);
   
   return res.status(200).json(response);
 }
