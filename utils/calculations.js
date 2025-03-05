@@ -31,8 +31,8 @@ const rows = paymentStages.map(stage => {
     paymentStage: stage.stage,
     percentEquity: stage.percentEquity === 0 ? '' : (stage.percentEquity * 100).toFixed(0) + '%',
     percentBank: stage.percentBank === 0 ? '' : (stage.percentBank * 100).toFixed(0) + '%',
-    equityPaid: equityPaidRounded === 0 ? '' : '$' + formatNumber(equityPaidRounded),
-    bankFunded: bankFundedRounded === 0 ? '' : '$' + formatNumber(bankFundedRounded),
+    equityPaid: equityPaidRounded === 0 ? '' : formatNumber(equityPaidRounded),
+    bankFunded: bankFundedRounded === 0 ? '' : formatNumber(bankFundedRounded),
   };
 });
 
@@ -56,8 +56,8 @@ const totalsRow = {
   paymentStage: 'Total',
   percentEquity: totalPercentEquity === 0 ? '' : (totalPercentEquity * 100).toFixed(0) + '%',
   percentBank: totalPercentBank === 0 ? '' : (totalPercentBank * 100).toFixed(0) + '%',
-  equityPaid: Math.round(totalEquityPaid) === 0 ? '' : '$' + formatNumber(Math.round(totalEquityPaid)),
-  bankFunded: Math.round(totalBankFunded) === 0 ? '' : '$' + formatNumber(Math.round(totalBankFunded)),
+  equityPaid: Math.round(totalEquityPaid) === 0 ? '' : formatNumber(Math.round(totalEquityPaid)),
+  bankFunded: Math.round(totalBankFunded) === 0 ? '' : formatNumber(Math.round(totalBankFunded)),
 };
 
 // Append blank row and totals row
@@ -68,8 +68,8 @@ return {
   header: headers,
   keys: keys,
   rows,
-  totalPriceUSD: '$' + formatNumber(Math.round(totalPriceUSD)),
-  totalPriceILS: '$' + formatNumber(Math.round(totalPriceILS)),
+  totalPriceUSD: formatNumber(Math.round(totalPriceUSD)),
+  totalPriceILS: formatNumber(Math.round(totalPriceILS)),
 };}
 
 
