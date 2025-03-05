@@ -262,6 +262,8 @@ return {
   };}
 
 // ------------------------------------------ 
+import PDFDocument from 'pdfkit';
+
 export function generatePDF(res, planData) {
   const doc = new PDFDocument({ size: 'A4', margin: 50 });
   let buffers = [];
@@ -274,32 +276,32 @@ export function generatePDF(res, planData) {
     res.end(pdfData);
   });
   
+  // Define startX early so it's available throughout.
+  const startX = doc.page.margins.left; // e.g., 50
+
   // Title
   doc.fontSize(16).font('Helvetica-Bold').text('Payment Plan', { align: 'center' });
   doc.moveDown(2);
-
-  / Draw a banner
-const bannerHeight = 30;
-doc.rect(startX, doc.y, doc.page.width - 2 * startX, bannerHeight)
-  .fillAndStroke('#ADD8E6', '#000000');  // Use light green fill with black border
-
-// Set banner text (centered)
-doc.fillColor('#000000')  // Set text color
-  .fontSize(12)
-  .text(planData.bannerText, startX, doc.y + bannerHeight / 2 - 6, {
-    width: doc.page.width - 2 * startX,
-    align: 'center'
-  });
-
-// Move down after the banner
-doc.moveDown(2);
-
+  
+  // Draw a banner
+  const bannerHeight = 30;
+  doc.rect(startX, doc.y, doc.page.width - 2 * startX, bannerHeight)
+    .fillAndStroke('#ADD8E6', '#000000');  // Light blue banner with black border
+  
+  doc.fillColor('#000000')
+    .fontSize(12)
+    .text(planData.bannerText, startX, doc.y + bannerHeight / 2 - 6, {
+      width: doc.page.width - 2 * startX,
+      align: 'center'
+    });
+  
+  // Move down after the banner
+  doc.moveDown(2);
+  
   // Define columns
-  const startX = doc.page.margins.left;
   const tableTop = doc.y;
   const baseColWidths = [150, 100, 100, 100, 100];
-
-  // Adjust column widths for 'Percent'
+  // Adjust widths if header contains "percent"
   const headers = planData.header;
   const colWidths = headers.map((header, i) =>
     header.toLowerCase().includes("percent") ? baseColWidths[i] * 0.8 : baseColWidths[i]
@@ -311,33 +313,31 @@ doc.moveDown(2);
     colX[i] = colX[i - 1] + colWidths[i - 1];
   }
   
-  const headerHeight = 30; // Increased for text wrapping
+  const headerHeight = 30; // Header cell height for wrapping
   
-  // Draw centered headers
+  // Draw centered headers with vertical centering
   doc.fontSize(10).font('Helvetica-Bold');
-headers.forEach((headerText, index) => {
-  // Measure text height
-  const textHeight = doc.heightOfString(headerText, {
-    width: colWidths[index] - 10
+  headers.forEach((headerText, index) => {
+    const textHeight = doc.heightOfString(headerText, {
+      width: colWidths[index] - 10
+    });
+    const textY = tableTop + (headerHeight - textHeight) / 2;
+    doc.text(headerText, colX[index] + 5, textY, {
+      width: colWidths[index] - 10,
+      align: 'center'
+    });
   });
-
-  // Calculate Y position to center text vertically
-  const textY = tableTop + (headerHeight - textHeight) / 2;
-
-  doc.text(headerText, colX[index] + 5, textY, {
-    width: colWidths[index] - 10,
-    align: 'center'
-  });
-});
   
+  // Draw header border
   for (let i = 0; i < colWidths.length; i++) {
     doc.rect(colX[i], tableTop, colWidths[i], headerHeight).stroke();
   }
   
   let currentY = tableTop + headerHeight;
   doc.font('Helvetica').fontSize(10);
-  const keys = planData.keys;
+  const keys = planData.keys; // Should match the headers order
   
+  // Draw data rows
   planData.rows.forEach((row) => {
     const rowHeight = 20;
     for (let i = 0; i < colWidths.length; i++) {
@@ -345,7 +345,7 @@ headers.forEach((headerText, index) => {
     }
     
     keys.forEach((key, idx) => {
-      let cellValue = row[key];
+      let cellValue = row[planData.keys[idx]];
       const isMoneyColumn = headers[idx].includes('$');
       
       if (isMoneyColumn) {
@@ -364,22 +364,21 @@ headers.forEach((headerText, index) => {
       }
       
       const align = idx === 0 ? 'center' : 'right';
-
       if (isMoneyColumn && typeof cellValue === 'object') {
+        // Render '$' left-aligned in a fixed width area, number right-aligned in the remainder.
         doc.text('$', colX[idx] + 5, currentY + 5, { width: 10, align: 'left' });
         doc.text(formatNumber(cellValue.money), colX[idx] + 15, currentY + 5, {
-          width: colWidths[idx] - 20, // Reduced width for padding from right
+          width: colWidths[idx] - 20,
           align: 'right'
         });
       } else {
-        // Adjust width for right-aligned cells to add visual padding
+        // Add slight padding for right-aligned text.
         const textAlignAdjust = align === 'right' ? 5 : 0;
         doc.text(cellValue, colX[idx] + 5, currentY + 5, {
-          width: colWidths[idx] - 10 - textAlignAdjust, // Extra space from right
-          align
+          width: colWidths[idx] - 10 - textAlignAdjust,
+          align: align
         });
       }
-      
     });
     
     currentY += rowHeight;
@@ -391,7 +390,7 @@ headers.forEach((headerText, index) => {
   doc.end();
 }
 
-// Helper to format numeric values with commas
+// Helper to format numbers with commas and no decimals.
 function formatNumber(amount) {
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
