@@ -226,16 +226,15 @@ export function generatePDF(res, planData) {
     res.setHeader('Content-Disposition', 'attachment; filename=payment-plan.pdf');
     res.end(pdfData);
   });
-  
+
   // Title
   doc.fontSize(16).font('Helvetica-Bold').text('Payment Plan', { align: 'center' });
   doc.moveDown(2);
 
-  // Define columns
-  const startX = doc.page.margins.left; // typically 50
+  // Define columns with updated width for "$ Equity Paid"
+  const startX = doc.page.margins.left;
   const tableTop = doc.y;
-  // Example widths that sum to less than 495 for A4 minus margins
-  const colWidths = [150, 90, 90, 70, 90];
+  const colWidths = [150, 90, 130, 70, 90]; // Adjusted widths
   
   // Calculate x positions
   const colX = [];
@@ -248,77 +247,63 @@ export function generatePDF(res, planData) {
   const headers = planData.header;
   const keys = planData.keys;
 
-  // Draw table headers
+  // Draw table headers with wrapping
   doc.fontSize(10).font('Helvetica-Bold');
   headers.forEach((headerText, index) => {
     const alignment = (index === 0) ? 'center' : 'right';
     doc.text(headerText, colX[index] + 5, tableTop + 5, {
       width: colWidths[index] - 10,
-      align: alignment
+      align: alignment,
+      characterSpacing: 0.75, // Slightly adjust to aid wrapping
+      lineGap: 3 // Add space between lines if wrapped
     });
   });
 
   // Draw header border
-  const headerHeight = 20;
+  const headerHeight = 40; // Increased for better text wrapping
   for (let i = 0; i < colWidths.length; i++) {
     doc.rect(colX[i], tableTop, colWidths[i], headerHeight).stroke();
   }
-  
+
   // Start rows after header
   let currentY = tableTop + headerHeight;
   doc.font('Helvetica').fontSize(10);
 
   // Draw data rows
- planData.rows.forEach((row) => {
-  const rowHeight = 20;
-  // Draw borders for each cell in the row
-  for (let i = 0; i < colWidths.length; i++) {
-    doc.rect(colX[i], currentY, colWidths[i], rowHeight).stroke();
-  }
-
-  // Use dynamic keys to insert text for each column:
-  const keys = planData.keys; // Expected: ["paymentStage", "percentEquity", "percentBank", "equityPaid", "bankFunded"]
-
-  keys.forEach((key, idx) => {
-    let cellValue = row[key];
-    
-    // Handle percentages without decimals (assuming keys at index 1 and 2)
-    if ((idx === 1 || idx === 2) && typeof cellValue === 'string' && cellValue.includes('%')) {
-      const perc = parseFloat(cellValue);
-      cellValue = Math.round(perc) + '%';
+  planData.rows.forEach((row) => {
+    const rowHeight = 20;
+    for (let i = 0; i < colWidths.length; i++) {
+      doc.rect(colX[i], currentY, colWidths[i], rowHeight).stroke();
     }
-    // For monetary columns (keys at index 3 and 4), check if zero
-    else if ((idx === 3 || idx === 4)) {
-      let num = Number(cellValue);
-      if (num === 0) {
-        cellValue = "";  // Set zero values as empty string
+
+    // Insert row data
+    keys.forEach((key, idx) => {
+      let cellValue = row[key];
+      const num = Number(cellValue);
+      if ((idx === 3 || idx === 4) && num === 0) {
+        cellValue = "";
       } else if (!isNaN(num)) {
         cellValue = '$' + formatNumber(num);
       }
-    }
-    
-    // Handle undefined or null cell values
-    if (cellValue == null) {
-      cellValue = "";
-    } else {
-      cellValue = cellValue.toString();
-    }
-    
-    // Alignment for each cell
-    const align = idx === 0 ? 'center' : 'right';
-    doc.text(cellValue, colX[idx] + 5, currentY + 5, {
-      width: colWidths[idx] - 10,
-      align: align
-    });
-  });
-  
-  currentY += rowHeight;
-});
 
-  // Optional extra info
-  doc.moveDown(2).fontSize(11)
-    .text('Delivery time: 36 months', { align: 'left' });
-  
+      if (cellValue == null) {
+        cellValue = "";
+      } else {
+        cellValue = cellValue.toString();
+      }
+
+      const align = idx === 0 ? 'center' : 'right';
+      doc.text(cellValue, colX[idx] + 5, currentY + 5, {
+        width: colWidths[idx] - 10,
+        align: align
+      });
+    });
+
+    currentY += rowHeight;
+  });
+
+  doc.moveDown(2).fontSize(11).text('Delivery time: 36 months', { align: 'left' });
+
   doc.end();
 }
 
