@@ -1,36 +1,35 @@
 import PDFDocument from 'pdfkit';
-export function calculatePaymentPlan0(apartmentPrice, conversionRate, userCurrency) {
+export function calculatePaymentPlan50(apartmentPrice, conversionRate, userCurrency) {
   const totalPriceUSD = userCurrency === 'USD' ? apartmentPrice : apartmentPrice / conversionRate;
   const totalPriceILS = userCurrency === 'USD' ? apartmentPrice * conversionRate : apartmentPrice;
   // Define headers for the table (they may differ depending on financing option)
-  const headers = ['Payment Stage', 'Amount (ILS)', 'Amount (USD)', 'Percent', 'Cumulative (USD)'];
-  const keys = ["paymentStage", "amountToPayILS", "amountToPayUSD", "percent", "cumulative"];
+ const headers = ['Payment Stage', 'Percent Equity Paid', 'Percent Bank', '$ Equity Paid', '$ Bank Funded'];
+const keys = ['paymentStage', 'percentEquity', 'percentBank', 'equityPaid', 'bankFunded'];
 
-  const paymentStages = [
-    { stage: "At Signing of Contract", percent: 0.15 },
-    { stage: "6 months", percent: 0.12 },
-    { stage: "12 months", percent: 0.12 },
-    { stage: "18 months", percent: 0.12 },
-    { stage: "24 months", percent: 0.11 },
-    { stage: "30 months", percent: 0.11 },
-    { stage: "36 Months", percent: 0.12 },
-    { stage: "Delivery of the apartment", percent: 0.15 },
-  ];
+const paymentStages = [
+  { stage: "At Signing of Contract", percentEquity: 0.15, percentBank: 0 },
+  { stage: "6 months", percentEquity: 0.03, percentBank: 0.09 },
+  { stage: "12 months", percentEquity: 0.03, percentBank: 0.09 },
+  { stage: "18 months", percentEquity: 0.03, percentBank: 0.09 },
+  { stage: "24 months", percentEquity: 0.03, percentBank: 0.08 },
+  { stage: "30 months", percentEquity: 0.03, percentBank: 0.08 },
+  { stage: "36 Months", percentEquity: 0.05, percentBank: 0.07 },
+  { stage: "Delivery of the apartment", percentEquity: 0.15, percentBank: 0 },
+];
 
-  let cumulativeUSD = 0;
-  const rows = paymentStages.map((stage) => {
-    const amountToPayUSD = totalPriceUSD * stage.percent;
-    const amountToPayILS = totalPriceILS * stage.percent;
-    cumulativeUSD += amountToPayUSD;
+// Build rows by calculating each required field
+const rows = paymentStages.map(stage => {
+  const equityPaidUSD = stage.percentEquity * totalPriceUSD;
+  const bankFundedUSD = stage.percentBank * totalPriceUSD;
 
-    return {
-      paymentStage: stage.stage,
-      amountToPayILS: amountToPayILS.toFixed(2),
-      amountToPayUSD: amountToPayUSD.toFixed(2),
-      percent: (stage.percent * 100).toFixed(2) + '%',
-      cumulative: cumulativeUSD.toFixed(2)
-    };
-  });
+  return {
+    paymentStage: stage.stage,
+    percentEquity: (stage.percentEquity * 100).toFixed(2) + '%',
+    percentBank: (stage.percentBank * 100).toFixed(2) + '%',
+    equityPaid: equityPaidUSD.toFixed(2),
+    bankFunded: bankFundedUSD.toFixed(2),
+  };
+});
 
   const totalILS = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayILS), 0).toFixed(2);
   const totalUSD = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayUSD), 0).toFixed(2);
@@ -47,7 +46,7 @@ return {
 
 // ---------------------------------------------------------
 
-export function calculatePaymentPlan50(apartmentPrice, conversionRate, userCurrency) {
+export function calculatePaymentPlan0(apartmentPrice, conversionRate, userCurrency) {
   const totalPriceUSD = userCurrency === 'USD' ? apartmentPrice : apartmentPrice / conversionRate;
   const totalPriceILS = userCurrency === 'USD' ? apartmentPrice * conversionRate : apartmentPrice;
   // Define headers for the table (they may differ depending on financing option)
