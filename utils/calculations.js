@@ -23,16 +23,14 @@ const rows = paymentStages.map(stage => {
   const equityPaidUSD = stage.percentEquity * totalPriceUSD;
   const bankFundedUSD = stage.percentBank * totalPriceUSD;
 
-  // Round the values to integers
-  const equityPaidRounded = Number(equityPaidUSD.toFixed(0));
-  const bankFundedRounded = Number(bankFundedUSD.toFixed(0));
+  // Round and format, checking if the amount actually rounds to zero
+  const equityPaidRounded = Math.round(equityPaidUSD);
+  const bankFundedRounded = Math.round(bankFundedUSD);
 
   return {
     paymentStage: stage.stage,
-    // For percentages: if exactly 0, leave blank; else display as whole number with %
     percentEquity: stage.percentEquity === 0 ? '' : (stage.percentEquity * 100).toFixed(0) + '%',
     percentBank: stage.percentBank === 0 ? '' : (stage.percentBank * 100).toFixed(0) + '%',
-    // For money fields: if rounded value is 0, show blank; else show with $ and formatted commas.
     equityPaid: equityPaidRounded === 0 ? '' : '$' + formatNumber(equityPaidRounded),
     bankFunded: bankFundedRounded === 0 ? '' : '$' + formatNumber(bankFundedRounded),
   };
@@ -53,16 +51,16 @@ const blankRow = {
   bankFunded: ''
 };
 
-// Create totals row
+// Create totals row with the same logic
 const totalsRow = {
   paymentStage: 'Total',
   percentEquity: totalPercentEquity === 0 ? '' : (totalPercentEquity * 100).toFixed(0) + '%',
   percentBank: totalPercentBank === 0 ? '' : (totalPercentBank * 100).toFixed(0) + '%',
   equityPaid: Math.round(totalEquityPaid) === 0 ? '' : '$' + formatNumber(Math.round(totalEquityPaid)),
-  bankFunded: Math.round(totalBankFunded) === 0 ? '' : '$' + formatNumber(Math.round(totalBankFunded))
+  bankFunded: Math.round(totalBankFunded) === 0 ? '' : '$' + formatNumber(Math.round(totalBankFunded)),
 };
 
-// Append blank and totals rows
+// Append blank row and totals row
 rows.push(blankRow);
 rows.push(totalsRow);
 
@@ -71,7 +69,7 @@ return {
   keys: keys,
   rows,
   totalPriceUSD: '$' + formatNumber(Math.round(totalPriceUSD)),
-  totalPriceILS: '$' + formatNumber(Math.round(totalPriceILS))
+  totalPriceILS: '$' + formatNumber(Math.round(totalPriceILS)),
 };}
 
 
