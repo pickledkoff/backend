@@ -269,7 +269,7 @@ export function generatePDF(res, planData) {
   doc.font('Helvetica').fontSize(10);
 
   // Draw data rows
-  planData.rows.forEach((row) => {
+ planData.rows.forEach((row) => {
   const rowHeight = 20;
   // Draw borders for each cell in the row
   for (let i = 0; i < colWidths.length; i++) {
@@ -282,27 +282,29 @@ export function generatePDF(res, planData) {
   keys.forEach((key, idx) => {
     let cellValue = row[key];
     
-    // If the cell is meant to be a percentage (assume keys at index 1 and 2)
+    // Handle percentages without decimals (assuming keys at index 1 and 2)
     if ((idx === 1 || idx === 2) && typeof cellValue === 'string' && cellValue.includes('%')) {
       const perc = parseFloat(cellValue);
       cellValue = Math.round(perc) + '%';
     }
-    // For money columns (keys at index 3 and 4), format them as dollar amounts.
+    // For monetary columns (keys at index 3 and 4), check if zero
     else if ((idx === 3 || idx === 4)) {
       let num = Number(cellValue);
-      if (!isNaN(num)) {
+      if (num === 0) {
+        cellValue = "";  // Set zero values as empty string
+      } else if (!isNaN(num)) {
         cellValue = '$' + formatNumber(num);
       }
     }
     
-    // If cellValue is null or undefined, set it as empty string
+    // Handle undefined or null cell values
     if (cellValue == null) {
       cellValue = "";
     } else {
       cellValue = cellValue.toString();
     }
     
-    // For the first column use 'center' alignment, for others 'right'
+    // Alignment for each cell
     const align = idx === 0 ? 'center' : 'right';
     doc.text(cellValue, colX[idx] + 5, currentY + 5, {
       width: colWidths[idx] - 10,
