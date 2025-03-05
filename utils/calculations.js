@@ -82,6 +82,7 @@ return {
   totalPriceUSD: Math.round(totalPriceUSD),
   totalPriceILS: Math.round(totalPriceILS),
   conversionRate: conversionRate,
+  bannerText: '50% Financing'
 };}
 
 
@@ -162,7 +163,9 @@ return {
     totalUSD,
     totalPriceUSD: totalPriceUSD.toFixed(0),
     totalPriceILS: totalPriceILS.toFixed(0),
-    conversionRate: conversionRate
+    conversionRate: conversionRate,
+    bannerText: 'Paying in Full'
+
   };}
 // ---------------------------
 export function calculatePaymentPlan70(apartmentPrice, conversionRate, userCurrency) {
@@ -274,7 +277,23 @@ export function generatePDF(res, planData) {
   // Title
   doc.fontSize(16).font('Helvetica-Bold').text('Payment Plan', { align: 'center' });
   doc.moveDown(2);
-  
+
+  / Draw a banner
+const bannerHeight = 30;
+doc.rect(startX, doc.y, doc.page.width - 2 * startX, bannerHeight)
+  .fillAndStroke('#ADD8E6', '#000000');  // Use light green fill with black border
+
+// Set banner text (centered)
+doc.fillColor('#000000')  // Set text color
+  .fontSize(12)
+  .text(planData.bannerText, startX, doc.y + bannerHeight / 2 - 6, {
+    width: doc.page.width - 2 * startX,
+    align: 'center'
+  });
+
+// Move down after the banner
+doc.moveDown(2);
+
   // Define columns
   const startX = doc.page.margins.left;
   const tableTop = doc.y;
