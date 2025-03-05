@@ -234,7 +234,7 @@ export function generatePDF(res, planData) {
   // Define columns
   const startX = doc.page.margins.left;
   const tableTop = doc.y;
-  const baseColWidths = [150, 90, 90, 70, 90];
+  const baseColWidths = [150, 100, 100, 100, 100];
 
   // Adjust column widths for 'Percent'
   const headers = planData.header;
@@ -252,12 +252,12 @@ export function generatePDF(res, planData) {
   
   // Draw centered headers
   doc.fontSize(10).font('Helvetica-Bold');
-  headers.forEach((headerText, index) => {
-    doc.text(headerText, colX[index] + 5, tableTop + 5, {
-      width: colWidths[index] - 10,
-      align: 'center' // Center alignment for headers
-    });
+headers.forEach((headerText, index) => {
+  doc.text(headerText, colX[index] + 5, tableTop + (headerHeight / 2) - 5, { // Center vertically
+    width: colWidths[index] - 10,
+    align: 'center'
   });
+});
   
   for (let i = 0; i < colWidths.length; i++) {
     doc.rect(colX[i], tableTop, colWidths[i], headerHeight).stroke();
