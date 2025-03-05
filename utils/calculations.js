@@ -70,6 +70,7 @@ return {
   rows,
   totalPriceUSD: Math.round(totalPriceUSD),
   totalPriceILS: Math.round(totalPriceILS),
+  conversionRate: conversionRate,
 };}
 
 
@@ -253,7 +254,15 @@ export function generatePDF(res, planData) {
   // Draw centered headers
   doc.fontSize(10).font('Helvetica-Bold');
 headers.forEach((headerText, index) => {
-  doc.text(headerText, colX[index] + 5, tableTop + (headerHeight / 2) - 5, { // Center vertically
+  // Measure text height
+  const textHeight = doc.heightOfString(headerText, {
+    width: colWidths[index] - 10
+  });
+
+  // Calculate Y position to center text vertically
+  const textY = tableTop + (headerHeight - textHeight) / 2;
+
+  doc.text(headerText, colX[index] + 5, textY, {
     width: colWidths[index] - 10,
     align: 'center'
   });
@@ -315,7 +324,7 @@ headers.forEach((headerText, index) => {
   });
   
   doc.moveDown(2).fontSize(11)
-    .text('Delivery time: 36 months', { align: 'left' });
+    .text('Exchange rate' + planData.conversionRate, { align: 'left' });
   
   doc.end();
 }
