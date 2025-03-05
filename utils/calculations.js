@@ -235,7 +235,7 @@ export function generatePDF(res, planData) {
   const startX = doc.page.margins.left; // e.g., 50
   const tableTop = doc.y;
   // Base widths for cells. These values will be adjusted for headers that include "Percent"
-  const baseColWidths = [150, 90, 90, 70, 90];
+  const baseColWidths = [150, 100, 100, 100, 100];
   
   // Adjust column widths if header contains "Percent"
   const headers = planData.header;
@@ -320,7 +320,6 @@ export function generatePDF(res, planData) {
   doc.text(cellValue, colX[idx] + 5, currentY + 5, { width: colWidths[idx] - 10, align: align });
 }
   });
-  
   currentY += rowHeight;
 });
   
