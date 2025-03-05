@@ -59,10 +59,21 @@ const totalsRow = {
   equityPaid: Math.round(totalEquityPaid) === 0 ? '' : Math.round(totalEquityPaid),
   bankFunded: Math.round(totalBankFunded) === 0 ? '' : Math.round(totalBankFunded),
 };
+  
+// Create closing costs row 
+const closingCosts = {
+  paymentStage: 'Closing Costs Est',
+  percentEquity: 10 + '%',
+  percentBank: '',
+  equityPaid: Math.round(totalPriceUSD * .1),
+  bankFunded: '0',
+};
 
 // Append blank row and totals row
 rows.push(blankRow);
 rows.push(totalsRow);
+rows.push(blankRow);
+rows.push(closingCosts);
 
 return {
   header: headers,
@@ -324,7 +335,7 @@ headers.forEach((headerText, index) => {
   });
   
   doc.moveDown(2).fontSize(11)
-    .text('Exchange rate' + planData.conversionRate, { align: 'left' });
+    .text('Exchange rate: ' + planData.conversionRate, { align: 'left' });
   
   doc.end();
 }
