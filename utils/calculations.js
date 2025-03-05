@@ -31,18 +31,43 @@ const rows = paymentStages.map(stage => {
   };
 });
 
-  const totalILS = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayILS), 0).toFixed(2);
-  const totalUSD = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayUSD), 0).toFixed(2);
+  // Calculate totals (using raw numeric values)
+const totalPercentEquity = paymentStages.reduce((sum, stage) => sum + stage.percentEquity, 0);
+const totalPercentBank = paymentStages.reduce((sum, stage) => sum + stage.percentBank, 0);
+const totalEquityPaid = paymentStages.reduce((sum, stage) => sum + (stage.percentEquity * totalPriceUSD), 0);
+const totalBankFunded = paymentStages.reduce((sum, stage) => sum + (stage.percentBank * totalPriceUSD), 0);
+
+// Create blank row
+const blankRow = {
+  paymentStage: '',
+  percentEquity: '',
+  percentBank: '',
+  equityPaid: '',
+  bankFunded: ''
+};
+
+// Create totals row
+const totalsRow = {
+  paymentStage: 'Total',
+  percentEquity: (totalPercentEquity * 100).toFixed(2) + '%',
+  percentBank: (totalPercentBank * 100).toFixed(2) + '%',
+  equityPaid: totalEquityPaid.toFixed(2),
+  bankFunded: totalBankFunded.toFixed(2)
+};
+
+// Append blank row and totals row
+rows.push(blankRow);
+rows.push(totalsRow);
 
 return {
-    header: headers,
-    keys: keys,
-    rows,
-    totalILS,
-    totalUSD,
-    totalPriceUSD: totalPriceUSD.toFixed(2),
-    totalPriceILS: totalPriceILS.toFixed(2)
-  };}
+  header: headers,
+  keys: keys,
+  rows,
+  totalILS,
+  totalUSD,
+  totalPriceUSD: totalPriceUSD.toFixed(2),
+  totalPriceILS: totalPriceILS.toFixed(2)
+};}
 
 // ---------------------------------------------------------
 
