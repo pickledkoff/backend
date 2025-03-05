@@ -24,10 +24,12 @@ const rows = paymentStages.map(stage => {
 
   return {
     paymentStage: stage.stage,
-    percentEquity: (stage.percentEquity * 100).toFixed(2) + '%',
-    percentBank: (stage.percentBank * 100).toFixed(2) + '%',
-    equityPaid: '$' + equityPaidUSD.toFixed(2),
-    bankFunded: '$' + bankFundedUSD.toFixed(2),
+    // For percentages, display as whole number percentages:
+    percentEquity: (stage.percentEquity * 100).toFixed(0) + '%',
+    percentBank: (stage.percentBank * 100).toFixed(0) + '%',
+    // For money fields, round and format with commas and a $ prefix:
+    equityPaid: '$' + formatNumber(Math.round(equityPaidUSD)),
+    bankFunded: '$' + formatNumber(Math.round(bankFundedUSD)),
   };
 });
 
