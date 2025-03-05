@@ -45,6 +45,148 @@ return {
     totalPriceILS: totalPriceILS.toFixed(2)
   };}
 
+// ---------------------------------------------------------
+
+export function calculatePaymentPlan50(apartmentPrice, conversionRate, userCurrency) {
+  const totalPriceUSD = userCurrency === 'USD' ? apartmentPrice : apartmentPrice / conversionRate;
+  const totalPriceILS = userCurrency === 'USD' ? apartmentPrice * conversionRate : apartmentPrice;
+  // Define headers for the table (they may differ depending on financing option)
+  const headers = ['Payment Stage', 'Amount (ILS)', 'Amount (USD)', 'Percent', 'Cumulative (USD)'];
+  const keys = ["paymentStage", "amountToPayILS", "amountToPayUSD", "percent", "cumulative"];
+
+  const paymentStages = [
+    { stage: "At Signing of Contract", percent: 0.15 },
+    { stage: "6 months", percent: 0.12 },
+    { stage: "12 months", percent: 0.12 },
+    { stage: "18 months", percent: 0.12 },
+    { stage: "24 months", percent: 0.11 },
+    { stage: "30 months", percent: 0.11 },
+    { stage: "36 Months", percent: 0.12 },
+    { stage: "Delivery of the apartment", percent: 0.15 },
+  ];
+
+  let cumulativeUSD = 0;
+  const rows = paymentStages.map((stage) => {
+    const amountToPayUSD = totalPriceUSD * stage.percent;
+    const amountToPayILS = totalPriceILS * stage.percent;
+    cumulativeUSD += amountToPayUSD;
+
+    return {
+      paymentStage: stage.stage,
+      amountToPayILS: amountToPayILS.toFixed(2),
+      amountToPayUSD: amountToPayUSD.toFixed(2),
+      percent: (stage.percent * 100).toFixed(2) + '%',
+      cumulative: cumulativeUSD.toFixed(2)
+    };
+  });
+
+  const totalILS = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayILS), 0).toFixed(2);
+  const totalUSD = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayUSD), 0).toFixed(2);
+
+return {
+    header: headers,
+    keys: keys,
+    rows,
+    totalILS,
+    totalUSD,
+    totalPriceUSD: totalPriceUSD.toFixed(2),
+    totalPriceILS: totalPriceILS.toFixed(2)
+  };}
+// ---------------------------
+export function calculatePaymentPlan70(apartmentPrice, conversionRate, userCurrency) {
+  const totalPriceUSD = userCurrency === 'USD' ? apartmentPrice : apartmentPrice / conversionRate;
+  const totalPriceILS = userCurrency === 'USD' ? apartmentPrice * conversionRate : apartmentPrice;
+  // Define headers for the table (they may differ depending on financing option)
+  const headers = ['Payment Stage', 'Amount (ILS)', 'Amount (USD)', 'Percent', 'Cumulative (USD)'];
+  const keys = ["paymentStage", "amountToPayILS", "amountToPayUSD", "percent", "cumulative"];
+
+  const paymentStages = [
+    { stage: "At Signing of Contract", percent: 0.15 },
+    { stage: "6 months", percent: 0.12 },
+    { stage: "12 months", percent: 0.12 },
+    { stage: "18 months", percent: 0.12 },
+    { stage: "24 months", percent: 0.11 },
+    { stage: "30 months", percent: 0.11 },
+    { stage: "36 Months", percent: 0.12 },
+    { stage: "Delivery of the apartment", percent: 0.15 },
+  ];
+
+  let cumulativeUSD = 0;
+  const rows = paymentStages.map((stage) => {
+    const amountToPayUSD = totalPriceUSD * stage.percent;
+    const amountToPayILS = totalPriceILS * stage.percent;
+    cumulativeUSD += amountToPayUSD;
+
+    return {
+      paymentStage: stage.stage,
+      amountToPayILS: amountToPayILS.toFixed(2),
+      amountToPayUSD: amountToPayUSD.toFixed(2),
+      percent: (stage.percent * 100).toFixed(2) + '%',
+      cumulative: cumulativeUSD.toFixed(2)
+    };
+  });
+
+  const totalILS = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayILS), 0).toFixed(2);
+  const totalUSD = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayUSD), 0).toFixed(2);
+
+return {
+    header: headers,
+    keys: keys,
+    rows,
+    totalILS,
+    totalUSD,
+    totalPriceUSD: totalPriceUSD.toFixed(2),
+    totalPriceILS: totalPriceILS.toFixed(2)
+  };}
+// ------------------------------------------
+
+export function calculatePaymentPlan75(apartmentPrice, conversionRate, userCurrency) {
+  const totalPriceUSD = userCurrency === 'USD' ? apartmentPrice : apartmentPrice / conversionRate;
+  const totalPriceILS = userCurrency === 'USD' ? apartmentPrice * conversionRate : apartmentPrice;
+  // Define headers for the table (they may differ depending on financing option)
+  const headers = ['Payment Stage', 'Amount (ILS)', 'Amount (USD)', 'Percent', 'Cumulative (USD)'];
+  const keys = ["paymentStage", "amountToPayILS", "amountToPayUSD", "percent", "cumulative"];
+
+  const paymentStages = [
+    { stage: "At Signing of Contract", percent: 0.15 },
+    { stage: "6 months", percent: 0.12 },
+    { stage: "12 months", percent: 0.12 },
+    { stage: "18 months", percent: 0.12 },
+    { stage: "24 months", percent: 0.11 },
+    { stage: "30 months", percent: 0.11 },
+    { stage: "36 Months", percent: 0.12 },
+    { stage: "Delivery of the apartment", percent: 0.15 },
+  ];
+
+  let cumulativeUSD = 0;
+  const rows = paymentStages.map((stage) => {
+    const amountToPayUSD = totalPriceUSD * stage.percent;
+    const amountToPayILS = totalPriceILS * stage.percent;
+    cumulativeUSD += amountToPayUSD;
+
+    return {
+      paymentStage: stage.stage,
+      amountToPayILS: amountToPayILS.toFixed(2),
+      amountToPayUSD: amountToPayUSD.toFixed(2),
+      percent: (stage.percent * 100).toFixed(2) + '%',
+      cumulative: cumulativeUSD.toFixed(2)
+    };
+  });
+
+  const totalILS = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayILS), 0).toFixed(2);
+  const totalUSD = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayUSD), 0).toFixed(2);
+
+return {
+    header: headers,
+    keys: keys,
+    rows,
+    totalILS,
+    totalUSD,
+    totalPriceUSD: totalPriceUSD.toFixed(2),
+    totalPriceILS: totalPriceILS.toFixed(2)
+  };}
+
+// ------------------------------------------ 
 export function generatePDF(res, planData) {
   const doc = new PDFDocument({ size: 'A4', margin: 50 });
   let buffers = [];
