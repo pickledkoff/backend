@@ -1,5 +1,5 @@
 import PDFDocument from 'pdfkit';
-export function calculatePaymentPlan(apartmentPrice, conversionRate, userCurrency) {
+export function calculatePaymentPlan0(apartmentPrice, conversionRate, userCurrency) {
   const totalPriceUSD = userCurrency === 'USD' ? apartmentPrice : apartmentPrice / conversionRate;
   const totalPriceILS = userCurrency === 'USD' ? apartmentPrice * conversionRate : apartmentPrice;
   // Define headers for the table (they may differ depending on financing option)
