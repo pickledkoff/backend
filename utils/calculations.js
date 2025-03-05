@@ -37,7 +37,7 @@ const totalPercentBank = paymentStages.reduce((sum, stage) => sum + stage.percen
 const totalEquityPaid = paymentStages.reduce((sum, stage) => sum + (stage.percentEquity * totalPriceUSD), 0);
 const totalBankFunded = paymentStages.reduce((sum, stage) => sum + (stage.percentBank * totalPriceUSD), 0);
 
-// Create blank row
+// Create blank row with explicitly empty strings
 const blankRow = {
   paymentStage: '',
   percentEquity: '',
@@ -46,26 +46,28 @@ const blankRow = {
   bankFunded: ''
 };
 
-// Create totals row
+// Create totals row with formatted values
 const totalsRow = {
   paymentStage: 'Total',
-  percentEquity: (totalPercentEquity * 100).toFixed(2) + '%',
-  percentBank: (totalPercentBank * 100).toFixed(2) + '%',
-  equityPaid: totalEquityPaid.toFixed(2),
-  bankFunded: totalBankFunded.toFixed(2)
+  percentEquity: (totalPercentEquity * 100).toFixed(0) + '%',
+  percentBank: (totalPercentBank * 100).toFixed(0) + '%',
+  equityPaid: '$' + formatNumber(Math.round(totalEquityPaid)),
+  bankFunded: '$' + formatNumber(Math.round(totalBankFunded))
 };
 
 // Append blank row and totals row
 rows.push(blankRow);
 rows.push(totalsRow);
 
+// Return object, including formatted totalPriceUSD and totalPriceILS if needed:
 return {
   header: headers,
   keys: keys,
   rows,
-  totalPriceUSD: totalPriceUSD.toFixed(2),
-  totalPriceILS: totalPriceILS.toFixed(2)
+  totalPriceUSD: '$' + formatNumber(Math.round(totalPriceUSD)),
+  totalPriceILS: '$' + formatNumber(Math.round(totalPriceILS))
 };}
+
 
 // ---------------------------------------------------------
 
@@ -299,5 +301,8 @@ export function generatePDF(res, planData) {
 
 // Helper to format numeric values with commas
 function formatNumber(amount) {
-  return new Intl.NumberFormat('en-US').format(amount);
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
 }
