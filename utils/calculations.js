@@ -4,7 +4,8 @@ export function calculatePaymentPlan(apartmentPrice, conversionRate, userCurrenc
   const totalPriceILS = userCurrency === 'USD' ? apartmentPrice * conversionRate : apartmentPrice;
   // Define headers for the table (they may differ depending on financing option)
   const headers = ['Payment Stage', 'Amount (ILS)', 'Amount (USD)', 'Percent', 'Cumulative (USD)'];
-  
+  const keys = ["paymentStage", "amountToPayILS", "amountToPayUSD", "percent", "cumulative"];
+
   const paymentStages = [
     { stage: "At Signing of Contract", percent: 0.15 },
     { stage: "6 months", percent: 0.12 },
@@ -36,6 +37,7 @@ export function calculatePaymentPlan(apartmentPrice, conversionRate, userCurrenc
 
 return {
     header: headers,
+    keys: keys,
     rows,
     totalILS,
     totalUSD,
@@ -74,7 +76,7 @@ export function generatePDF(res, planData) {
     colX[i] = colX[i - 1] + colWidths[i - 1];
   }
 
-  const headers = planData.header 
+  const headers = planData.header; 
   
   // Draw table header with a bold font
   doc.fontSize(10).font('Helvetica-Bold');
@@ -105,12 +107,27 @@ headers.forEach((headerText, index) => {
     for (let i = 0; i < colWidths.length; i++) {
       doc.rect(colX[i], currentY, colWidths[i], rowHeight).stroke();
     }
-    // Add row text. Use a 5pt padding on each cell.
-    doc.text(row.paymentStage, colX[0] + 5, currentY + 5, { width: colWidths[0] - 10 });
-    doc.text(`₪${formatNumber(row.amountToPayILS)}`, colX[1] + 5, currentY + 5, { width: colWidths[1] - 10, align: 'right' });
-    doc.text(`$${formatNumber(row.amountToPayUSD)}`, colX[2] + 5, currentY + 5, { width: colWidths[2] - 10, align: 'right' });
-    doc.text(row.percent, colX[3] + 5, currentY + 5, { width: colWidths[3] - 10, align: 'right' });
-    doc.text(`$${formatNumber(row.cumulative)}`, colX[4] + 5, currentY + 5, { width: colWidths[4] - 10, align: 'right' });
+    //define keys
+    const keys = planData.keys;
+
+     // Iterate over keys and add text; remove any currency symbols here
+  keys.forEach((key, idx) => {
+    let cellValue = row[key];
+    // Format numbers with commas if numeric, else use string value
+    if (typeof cellValue === 'number') {
+      cellValue = formatNumber(cellValue);
+    } else if (cellValue == null) {
+      cellValue = "";
+    } else {
+      cellValue = cellValue.toString();
+    }
+    // For the first column (assumed text) set center alignment; for others, right align.
+    const textAlign = idx === 0 ? 'center' : 'right';
+    doc.text(cellValue, colX[idx] + 5, currentY + 5, {
+      width: colWidths[idx] - 10,
+      align: textAlign
+    });
+  });
     
     currentY += rowHeight;
   });
