@@ -24,22 +24,22 @@ const rows = paymentStages.map(stage => {
 
   return {
     paymentStage: stage.stage,
-    // For percentages, display as whole number percentages:
-    percentEquity: (stage.percentEquity * 100).toFixed(0) + '%',
-    percentBank: (stage.percentBank * 100).toFixed(0) + '%',
-    // For money fields, round and format with commas and a $ prefix:
-    equityPaid: '$' + formatNumber(Math.round(equityPaidUSD)),
-    bankFunded: '$' + formatNumber(Math.round(bankFundedUSD)),
+    // If the percentage is 0, display blank; otherwise display rounded percentage
+    percentEquity: stage.percentEquity === 0 ? '' : (stage.percentEquity * 100).toFixed(0) + '%',
+    percentBank: stage.percentBank === 0 ? '' : (stage.percentBank * 100).toFixed(0) + '%',
+    // For money fields, if the number rounds to 0, leave empty; otherwise format with $ and commas.
+    equityPaid: Math.round(equityPaidUSD) === 0 ? '' : '$' + formatNumber(Math.round(equityPaidUSD)),
+    bankFunded: Math.round(bankFundedUSD) === 0 ? '' : '$' + formatNumber(Math.round(bankFundedUSD)),
   };
 });
 
-  // Calculate totals (using raw numeric values)
+// Calculate totals (using raw numeric values)
 const totalPercentEquity = paymentStages.reduce((sum, stage) => sum + stage.percentEquity, 0);
 const totalPercentBank = paymentStages.reduce((sum, stage) => sum + stage.percentBank, 0);
 const totalEquityPaid = paymentStages.reduce((sum, stage) => sum + (stage.percentEquity * totalPriceUSD), 0);
 const totalBankFunded = paymentStages.reduce((sum, stage) => sum + (stage.percentBank * totalPriceUSD), 0);
 
-// Create blank row (empty strings)
+// Create a blank row with empty strings
 const blankRow = {
   paymentStage: '',
   percentEquity: '',
@@ -48,16 +48,16 @@ const blankRow = {
   bankFunded: ''
 };
 
-// Create totals row; note toFixed(0) is used so no decimals are shown.
+// Create totals row
 const totalsRow = {
   paymentStage: 'Total',
-  percentEquity: (totalPercentEquity * 100).toFixed(0) + '%',
-  percentBank: (totalPercentBank * 100).toFixed(0) + '%',
-  equityPaid: '$' + formatNumber(Math.round(totalEquityPaid)),
-  bankFunded: '$' + formatNumber(Math.round(totalBankFunded))
+  percentEquity: totalPercentEquity === 0 ? '' : (totalPercentEquity * 100).toFixed(0) + '%',
+  percentBank: totalPercentBank === 0 ? '' : (totalPercentBank * 100).toFixed(0) + '%',
+  equityPaid: Math.round(totalEquityPaid) === 0 ? '' : '$' + formatNumber(Math.round(totalEquityPaid)),
+  bankFunded: Math.round(totalBankFunded) === 0 ? '' : '$' + formatNumber(Math.round(totalBankFunded))
 };
 
-// Append blank row and totals row
+// Append blank and totals rows
 rows.push(blankRow);
 rows.push(totalsRow);
 
