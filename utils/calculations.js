@@ -91,7 +91,7 @@ export function calculatePaymentPlan0(apartmentPrice, conversionRate, userCurren
   const totalPriceUSD = userCurrency === 'USD' ? apartmentPrice : apartmentPrice / conversionRate;
   const totalPriceILS = userCurrency === 'USD' ? apartmentPrice * conversionRate : apartmentPrice;
   // Define headers for the table (they may differ depending on financing option)
-  const headers = ['Payment Stage', 'Amount (ILS)', 'Amount (USD)', 'Percent', 'Cumulative (USD)'];
+  const headers = ['Payment Stage', 'Amount (ILS)', 'Amount ($)', 'Percent', 'Cumulative ($)'];
   const keys = ["paymentStage", "amountToPayILS", "amountToPayUSD", "percent", "cumulative"];
 
   const paymentStages = [
@@ -113,9 +113,9 @@ export function calculatePaymentPlan0(apartmentPrice, conversionRate, userCurren
 
     return {
       paymentStage: stage.stage,
-      amountToPayILS: amountToPayILS.toFixed(2),
-      amountToPayUSD: amountToPayUSD.toFixed(2),
-      percent: (stage.percent * 100).toFixed(2) + '%',
+      amountToPayILS: amountToPayILS.toFixed(0),
+      amountToPayUSD: amountToPayUSD.toFixed(0),
+      percent: (stage.percent * 100).toFixed(0) + '%',
       cumulative: cumulativeUSD.toFixed(2)
     };
   });
@@ -129,8 +129,8 @@ return {
     rows,
     totalILS,
     totalUSD,
-    totalPriceUSD: totalPriceUSD.toFixed(2),
-    totalPriceILS: totalPriceILS.toFixed(2)
+    totalPriceUSD: totalPriceUSD.toFixed(0),
+    totalPriceILS: totalPriceILS.toFixed(0)
   };}
 // ---------------------------
 export function calculatePaymentPlan70(apartmentPrice, conversionRate, userCurrency) {
