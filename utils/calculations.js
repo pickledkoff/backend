@@ -1,5 +1,5 @@
 import PDFDocument from 'pdfkit';
-export function calculatePaymentPlan0(apartmentPrice, conversionRate, userCurrency) {
+export function calculatePaymentPlan(apartmentPrice, conversionRate, userCurrency) {
   const totalPriceUSD = userCurrency === 'USD' ? apartmentPrice : apartmentPrice / conversionRate;
   const totalPriceILS = userCurrency === 'USD' ? apartmentPrice * conversionRate : apartmentPrice;
 
@@ -32,29 +32,8 @@ export function calculatePaymentPlan0(apartmentPrice, conversionRate, userCurren
   const totalILS = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayILS), 0).toFixed(2);
   const totalUSD = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayUSD), 0).toFixed(2);
 
-  return {
-  // A headers array that your PDF generator can use to render the table header
-  headers: [ 
-    "Payment Stage", 
-    "Amount (ILS)", 
-    "Amount (USD)", 
-    "Percent", 
-    "Cumulative (USD)" 
-  ],
-  // The total prices computed from the apartment price and conversion rate
-  totalPriceUSD, 
-  totalPriceILS,
-  // An array of row objects. Each row must include:
-  // paymentStage: string,
-  // amountToPayILS: number,
-  // amountToPayUSD: number,
-  // percent: string,     (like "15.00%")
-  // cumulative: number   (the running total in USD)
-  rows,
-  // Totals calculated from the rows (if needed)
-  totalILS, 
-  totalUSD
-};
+  return { totalPriceUSD, totalPriceILS, rows, totalILS, totalUSD };
+}
 
 export function generatePDF(res, planData) {
   // Create a new PDF document: using A4 size with 50pt margins
@@ -87,16 +66,13 @@ export function generatePDF(res, planData) {
     colX[i] = colX[i - 1] + colWidths[i - 1];
   }
 
-  // Use provided headers or default ones
-const headers = planData.header || ['Payment Stage', 'Amount (ILS)', 'Amount (USD)', 'Percent', 'Cumulative (USD)'];
-
-// Draw table header with a bold font
-doc.fontSize(10).font('Helvetica-Bold');
-headers.forEach((header, idx) => {
-  // Set alignment: center for first column, right for numbers
-  const alignSetting = idx === 0 ? 'center' : 'right';
-  doc.text(header, colX[idx] + 5, tableTop + 5, { width: colWidths[idx] - 10, align: alignSetting });
-});
+  // Draw table header with a bold font
+  doc.fontSize(10).font('Helvetica-Bold');
+  doc.text('Payment Stage', colX[0] + 5, tableTop + 5, { width: colWidths[0] - 10, align: 'center' });
+  doc.text('Amount (ILS)', colX[1] + 5, tableTop + 5, { width: colWidths[1] - 10, align: 'right' });
+  doc.text('Amount (USD)', colX[2] + 5, tableTop + 5, { width: colWidths[2] - 10, align: 'right' });
+  doc.text('Percent', colX[3] + 5, tableTop + 5, { width: colWidths[3] - 10, align: 'right' });
+  doc.text('Cumulative (USD)', colX[4] + 5, tableTop + 5, { width: colWidths[4] - 10, align: 'right' });
   
   // Draw header row border
   const headerHeight = 20;
