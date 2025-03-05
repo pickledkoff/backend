@@ -1,4 +1,4 @@
-import { calculatePaymentPlan, generatePDF } from '../utils/calculations.js';
+import { calculatePaymentPlan0, generatePDF } from '../utils/calculations.js';
 export default async function handler(req, res) {
   // Handle preflight requests
   if (req.method === "OPTIONS") {
@@ -33,7 +33,7 @@ export default async function handler(req, res) {
     // Convert conversionRate to a number with a new name
     const conversionRateNum = Number(conversionRate);
     const apartmentPriceNum = Number(apartmentPrice);
-    const planData = calculatePaymentPlan(apartmentPriceNum, conversionRateNum, currency);
+    const planData = calculatePaymentPlan0(apartmentPriceNum, conversionRateNum, currency);
 
     // Generate PDF
    generatePDF(res, planData);
