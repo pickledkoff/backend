@@ -46,10 +46,9 @@ return {
   };}
 
 export function generatePDF(res, planData) {
-  // Create a new PDF document: using A4 size with 50pt margins
   const doc = new PDFDocument({ size: 'A4', margin: 50 });
   let buffers = [];
-  
+
   doc.on('data', buffers.push.bind(buffers));
   doc.on('end', () => {
     const pdfData = Buffer.concat(buffers);
@@ -62,99 +61,94 @@ export function generatePDF(res, planData) {
   doc.fontSize(16).font('Helvetica-Bold').text('Payment Plan', { align: 'center' });
   doc.moveDown(2);
 
-  // Define table parameters
-  // For A4 with 50pt margins, usable width is about 595 - (50 * 2) = 495 points.
-  // We'll define columns with fixed widths that sum to less than 495.
-  const startX = doc.page.margins.left; // 50
-  const tableTop = doc.y;
   // Define columns
+  const startX = doc.page.margins.left; // typically 50
+  const tableTop = doc.y;
+  // Example widths that sum to less than 495 for A4 minus margins
   const colWidths = [150, 90, 90, 70, 90];
-  // Calculate x positions for each column using the starting x and cumulative widths:
+  
+  // Calculate x positions
   const colX = [];
   colX[0] = startX;
   for (let i = 1; i < colWidths.length; i++) {
     colX[i] = colX[i - 1] + colWidths[i - 1];
   }
 
-  const headers = planData.header; 
-  
-  // Draw table header with a bold font
-  doc.fontSize(10).font('Helvetica-Bold');
+  // Use dynamic headers
+  const headers = planData.header;
+  const keys = planData.keys;
 
-// Loop through headers and print them in proper columns:
-headers.forEach((headerText, index) => {
-  // For this example, for columns after the first, we align to right:
-  const alignment = index === 0 ? 'center' : 'right';
-  doc.text(headerText, colX[index] + 5, tableTop + 5, { 
-    width: colWidths[index] - 10, 
-    align: alignment 
+  // Draw table headers
+  doc.fontSize(10).font('Helvetica-Bold');
+  headers.forEach((headerText, index) => {
+    const alignment = (index === 0) ? 'center' : 'right';
+    doc.text(headerText, colX[index] + 5, tableTop + 5, {
+      width: colWidths[index] - 10,
+      align: alignment
+    });
   });
-});
-  
-  // Draw header row border
+
+  // Draw header border
   const headerHeight = 20;
   for (let i = 0; i < colWidths.length; i++) {
     doc.rect(colX[i], tableTop, colWidths[i], headerHeight).stroke();
   }
   
-  // Start drawing rows after header:
+  // Start rows after header
   let currentY = tableTop + headerHeight;
   doc.font('Helvetica').fontSize(10);
-  
+
+  // Draw data rows
   planData.rows.forEach((row) => {
     const rowHeight = 20;
-    // Draw borders for the row cells:
+    // Draw cell borders
     for (let i = 0; i < colWidths.length; i++) {
       doc.rect(colX[i], currentY, colWidths[i], rowHeight).stroke();
     }
-    //define keys
-    const keys = planData.keys;
-
-     // Iterate over keys and add text; remove any currency symbols here
-  keys.forEach((key, idx) => {
-    let cellValue = row[key];
-    // Format numbers with commas if numeric, else use string value
-    if (typeof cellValue === 'number') {
-      cellValue = formatNumber(cellValue);
-    } else if (cellValue == null) {
-      cellValue = "";
-    } else {
-      cellValue = cellValue.toString();
-    }
-    // For the first column (assumed text) set center alignment; for others, right align.
-    const textAlign = idx === 0 ? 'center' : 'right';
-    doc.text(cellValue, colX[idx] + 5, currentY + 5, {
-      width: colWidths[idx] - 10,
-      align: textAlign
-    });
-  });
     
+    // Insert row data
+    keys.forEach((key, idx) => {
+      let cellValue = row[key];
+      const numValue = Number(cellValue);
+      if (!isNaN(numValue)) {
+        cellValue = formatNumber(numValue);
+      } else if (cellValue == null) {
+        cellValue = "";
+      } else {
+        cellValue = cellValue.toString();
+      }
+      const align = idx === 0 ? 'center' : 'right';
+      doc.text(cellValue, colX[idx] + 5, currentY + 5, {
+        width: colWidths[idx] - 10,
+        align
+      });
+    });
     currentY += rowHeight;
   });
-  
-  // Draw totals row:
+
+  // Optional totals row
   const totalsRowHeight = 20;
   for (let i = 0; i < colWidths.length; i++) {
     doc.rect(colX[i], currentY, colWidths[i], totalsRowHeight).stroke();
   }
   doc.font('Helvetica-Bold');
   doc.text('Total', colX[0] + 5, currentY + 5, { width: colWidths[0] - 10 });
-  doc.text(`₪${formatNumber(planData.totalILS)}`, colX[1] + 5, currentY + 5, { width: colWidths[1] - 10, align: 'right' });
-  doc.text(`$${formatNumber(planData.totalUSD)}`, colX[2] + 5, currentY + 5, { width: colWidths[2] - 10, align: 'right' });
-  // Leave Percent blank or you can add a note:
+  // Right-align numeric totals (without currency symbols)
+  doc.text(formatNumber(planData.totalILS), colX[1] + 5, currentY + 5, { width: colWidths[1] - 10, align: 'right' });
+  doc.text(formatNumber(planData.totalUSD), colX[2] + 5, currentY + 5, { width: colWidths[2] - 10, align: 'right' });
   doc.text('', colX[3] + 5, currentY + 5, { width: colWidths[3] - 10, align: 'right' });
-  // You may want to leave cumulative blank or repeat last row:
-  doc.text(`$${formatNumber(planData.totalUSD)}`, colX[4] + 5, currentY + 5, { width: colWidths[4] - 10, align: 'right' });
+  doc.text(formatNumber(planData.totalUSD), colX[4] + 5, currentY + 5, { width: colWidths[4] - 10, align: 'right' });
 
   currentY += totalsRowHeight;
-  
-  // Delivery time (as separate text)
-  doc.moveDown(2).font('Helvetica').fontSize(11)
+
+  // Optional extra info
+  doc.moveDown(2).fontSize(11)
     .text('Delivery time: 36 months', { align: 'left' });
   
   doc.end();
 }
 
+// Helper to format numeric values with commas
 function formatNumber(amount) {
   return new Intl.NumberFormat('en-US').format(amount);
 }
