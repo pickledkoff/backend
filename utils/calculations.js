@@ -26,8 +26,8 @@ const rows = paymentStages.map(stage => {
     paymentStage: stage.stage,
     percentEquity: (stage.percentEquity * 100).toFixed(2) + '%',
     percentBank: (stage.percentBank * 100).toFixed(2) + '%',
-    equityPaid: equityPaidUSD.toFixed(2),
-    bankFunded: bankFundedUSD.toFixed(2),
+    equityPaid: '$' + equityPaidUSD.toFixed(2),
+    bankFunded: '$' + bankFundedUSD.toFixed(2),
   };
 });
 
