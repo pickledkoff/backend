@@ -262,8 +262,6 @@ return {
   };}
 
 // ------------------------------------------ 
-import PDFDocument from 'pdfkit';
-
 export function generatePDF(res, planData) {
   const doc = new PDFDocument({ size: 'A4', margin: 50 });
   let buffers = [];
