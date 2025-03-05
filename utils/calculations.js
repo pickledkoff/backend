@@ -123,18 +123,28 @@ export function calculatePaymentPlan0(apartmentPrice, conversionRate, userCurren
   const totalILS = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayILS), 0).toFixed(2);
   const totalUSD = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayUSD), 0).toFixed(2);
 
-  // Create a blank row with empty strings
-  const blankRow = {
-    paymentStage: '',
-    percentEquity: '',
-    percentBank: '',
-    equityPaid: '',
-    bankFunded: ''
-  };
+ 
+// Create a blank row with empty strings
+const blankRow = {
+  amountToPayILS: '',
+  amountToPayILS: '',
+  amountToPayUSD: '',
+  percent: '',
+  cumulative: ''
+};
+
+// Create totals row with the same logic
+const totalsRow = {
+  paymentStage: 'Total',
+  amountToPayILS: totalILS,
+  amountToPayUSD: totalUSD,
+  percent: '100%',
+  cumulative: '',
+};
 // Create Message row 
 const message = {
   paymentStage: 'DELIVERY TIME',
-  percentEquity: '36 MONTHS',
+  amountToPayILS: '36 MONTHS',
   percentBank: '',
   equityPaid: '',
   bankFunded: '',
