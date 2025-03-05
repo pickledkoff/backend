@@ -31,8 +31,8 @@ const rows = paymentStages.map(stage => {
     paymentStage: stage.stage,
     percentEquity: stage.percentEquity === 0 ? '' : (stage.percentEquity * 100).toFixed(0) + '%',
     percentBank: stage.percentBank === 0 ? '' : (stage.percentBank * 100).toFixed(0) + '%',
-    equityPaid: equityPaidRounded === 0 ? '' : formatNumber(equityPaidRounded),
-    bankFunded: bankFundedRounded === 0 ? '' : formatNumber(bankFundedRounded),
+    equityPaid: equityPaidRounded === 0 ? '' : equityPaidRounded,
+    bankFunded: bankFundedRounded === 0 ? '' : bankFundedRounded,
   };
 });
 
@@ -277,28 +277,29 @@ export function generatePDF(res, planData) {
   
  planData.rows.forEach((row) => {
   const rowHeight = 20;
-  
-  // Draw cell borders for each cell in the row.
+  // Draw borders for each cell in the row
   for (let i = 0; i < colWidths.length; i++) {
     doc.rect(colX[i], currentY, colWidths[i], rowHeight).stroke();
   }
-  
-  // Now loop over each header (using planData.header) to decide how to render each cell.
+
+  // Loop through each header (using planData.header)
   planData.header.forEach((headerText, idx) => {
+    // Use the corresponding key for this column
     let cellValue = row[planData.keys[idx]];
-    const isMoney = headerText.includes('$'); // if header contains $, treat cell as money.
     
-    if (isMoney) {
+    // Determine if this column is money by testing if headerText contains '$'
+    const isMoneyColumn = headerText.includes('$');
+    
+    if (isMoneyColumn) {
       // Convert cellValue to a number.
       const num = Number(cellValue);
-      // If the value is 0 or not a valid number, make it empty.
       if (isNaN(num) || num === 0) {
         cellValue = "";
       } else {
-        // For money, we want an object so that we can render the $ sign separately.
         cellValue = { money: num };
       }
     } else {
+      // For all other cells, if cellValue is null, set it as an empty string.
       if (cellValue == null) {
         cellValue = "";
       } else {
@@ -306,22 +307,17 @@ export function generatePDF(res, planData) {
       }
     }
     
-    // Determine the alignment: for the first column, 'center', otherwise 'right'
+    // Set alignment: for first column use 'center', else 'right'
     const align = idx === 0 ? 'center' : 'right';
     
-    if (isMoney && typeof cellValue === 'object') {
-      // Render the "$" sign left-aligned in a fixed 10-point area,
-      // then render the formatted number in the remaining cell width.
+    if (isMoneyColumn && typeof cellValue === 'object') {
+      // Render the "$" sign in a fixed width (10 pts, left-aligned)
       doc.text('$', colX[idx] + 5, currentY + 5, { width: 10, align: 'left', continued: true });
-      doc.text(formatNumber(Math.round(cellValue.money)), colX[idx] + 15, currentY + 5, {
-        width: colWidths[idx] - 15,
-        align: 'right'
-      });
+      // Then render the formatted number in the remaining space (right-aligned)
+      doc.text(formatNumber(cellValue.money), colX[idx] + 15, currentY + 5, { width: colWidths[idx] - 15, align: 'right' });
     } else {
-      // Simply render text.
       doc.text(cellValue, colX[idx] + 5, currentY + 5, { width: colWidths[idx] - 10, align: align });
     }
-    
   });
   
   currentY += rowHeight;
