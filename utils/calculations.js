@@ -19,17 +19,22 @@ const paymentStages = [
 
 // Build rows by calculating each required field
 const rows = paymentStages.map(stage => {
+  // Calculate the raw amounts in USD
   const equityPaidUSD = stage.percentEquity * totalPriceUSD;
   const bankFundedUSD = stage.percentBank * totalPriceUSD;
 
+  // Round the values to integers
+  const equityPaidRounded = Number(equityPaidUSD.toFixed(0));
+  const bankFundedRounded = Number(bankFundedUSD.toFixed(0));
+
   return {
     paymentStage: stage.stage,
-    // If the percentage is 0, display blank; otherwise display rounded percentage
+    // For percentages: if exactly 0, leave blank; else display as whole number with %
     percentEquity: stage.percentEquity === 0 ? '' : (stage.percentEquity * 100).toFixed(0) + '%',
     percentBank: stage.percentBank === 0 ? '' : (stage.percentBank * 100).toFixed(0) + '%',
-    // For money fields, if the number rounds to 0, leave empty; otherwise format with $ and commas.
-    equityPaid: Math.round(equityPaidUSD) === 0 ? '' : '$' + formatNumber(Math.round(equityPaidUSD)),
-    bankFunded: Math.round(bankFundedUSD) === 0 ? '' : '$' + formatNumber(Math.round(bankFundedUSD)),
+    // For money fields: if rounded value is 0, show blank; else show with $ and formatted commas.
+    equityPaid: equityPaidRounded === 0 ? '' : '$' + formatNumber(equityPaidRounded),
+    bankFunded: bankFundedRounded === 0 ? '' : '$' + formatNumber(bankFundedRounded),
   };
 });
 
