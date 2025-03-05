@@ -150,6 +150,8 @@ const message = {
   bankFunded: '',
 };
   rows.push(blankRow);
+  rows.push(totalsRow);
+  rows.push(blankRow);
   rows.push(message);
   
 return {
