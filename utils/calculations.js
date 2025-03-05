@@ -265,31 +265,48 @@ export function generatePDF(res, planData) {
 
   // Draw data rows
   planData.rows.forEach((row) => {
-    const rowHeight = 20;
-    // Draw cell borders
-    for (let i = 0; i < colWidths.length; i++) {
-      doc.rect(colX[i], currentY, colWidths[i], rowHeight).stroke();
+  const rowHeight = 20;
+  // Draw borders for each cell in the row
+  for (let i = 0; i < colWidths.length; i++) {
+    doc.rect(colX[i], currentY, colWidths[i], rowHeight).stroke();
+  }
+
+  // Use dynamic keys to insert text for each column:
+  const keys = planData.keys; // Expected: ["paymentStage", "percentEquity", "percentBank", "equityPaid", "bankFunded"]
+
+  keys.forEach((key, idx) => {
+    let cellValue = row[key];
+    
+    // If the cell is meant to be a percentage (assume keys at index 1 and 2)
+    if ((idx === 1 || idx === 2) && typeof cellValue === 'string' && cellValue.includes('%')) {
+      const perc = parseFloat(cellValue);
+      cellValue = Math.round(perc) + '%';
+    }
+    // For money columns (keys at index 3 and 4), format them as dollar amounts.
+    else if ((idx === 3 || idx === 4)) {
+      let num = Number(cellValue);
+      if (!isNaN(num)) {
+        cellValue = '$' + formatNumber(num);
+      }
     }
     
-    // Insert row data
-    keys.forEach((key, idx) => {
-      let cellValue = row[key];
-      const numValue = Number(cellValue);
-      if (!isNaN(numValue)) {
-        cellValue = formatNumber(numValue);
-      } else if (cellValue == null) {
-        cellValue = "";
-      } else {
-        cellValue = cellValue.toString();
-      }
-      const align = idx === 0 ? 'center' : 'right';
-      doc.text(cellValue, colX[idx] + 5, currentY + 5, {
-        width: colWidths[idx] - 10,
-        align
-      });
+    // If cellValue is null or undefined, set it as empty string
+    if (cellValue == null) {
+      cellValue = "";
+    } else {
+      cellValue = cellValue.toString();
+    }
+    
+    // For the first column use 'center' alignment, for others 'right'
+    const align = idx === 0 ? 'center' : 'right';
+    doc.text(cellValue, colX[idx] + 5, currentY + 5, {
+      width: colWidths[idx] - 10,
+      align: align
     });
-    currentY += rowHeight;
   });
+  
+  currentY += rowHeight;
+});
 
   // Optional extra info
   doc.moveDown(2).fontSize(11)
