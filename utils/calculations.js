@@ -3,8 +3,8 @@ export function calculatePaymentPlan50(apartmentPrice, conversionRate, userCurre
   const totalPriceUSD = userCurrency === 'USD' ? apartmentPrice : apartmentPrice / conversionRate;
   const totalPriceILS = userCurrency === 'USD' ? apartmentPrice * conversionRate : apartmentPrice;
   // Define headers for the table (they may differ depending on financing option)
- const headers = ['Payment Stage', 'Percent Equity Paid', 'Percent Bank', '$ Equity Paid', '$ Bank Funded'];
-const keys = ['paymentStage', 'percentEquity', 'percentBank', 'equityPaid', 'bankFunded'];
+  const headers = ['Payment Stage', 'Percent Equity Paid', 'Percent Bank', '$ Equity Paid', '$ Bank Funded'];
+  const keys = ['paymentStage', 'percentEquity', 'percentBank', 'equityPaid', 'bankFunded'];
 
 const paymentStages = [
   { stage: "At Signing of Contract", percentEquity: 0.15, percentBank: 0 },
@@ -17,8 +17,8 @@ const paymentStages = [
   { stage: "Delivery of the apartment", percentEquity: 0.15, percentBank: 0 },
 ];
 
-// Build rows by calculating each required field
-const rows = paymentStages.map(stage => {
+  // Build rows by calculating each required field
+  const rows = paymentStages.map(stage => {
   // Calculate the raw amounts in USD
   const equityPaidUSD = stage.percentEquity * totalPriceUSD;
   const bankFundedUSD = stage.percentBank * totalPriceUSD;
@@ -123,6 +123,16 @@ export function calculatePaymentPlan0(apartmentPrice, conversionRate, userCurren
   const totalILS = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayILS), 0).toFixed(2);
   const totalUSD = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayUSD), 0).toFixed(2);
 
+  // Create a blank row with empty strings
+  const blankRow = {
+    paymentStage: '',
+    percentEquity: '',
+    percentBank: '',
+    equityPaid: '',
+    bankFunded: ''
+  };
+  rows.push(blankRow);
+  
 return {
     header: headers,
     keys: keys,
@@ -130,7 +140,8 @@ return {
     totalILS,
     totalUSD,
     totalPriceUSD: totalPriceUSD.toFixed(0),
-    totalPriceILS: totalPriceILS.toFixed(0)
+    totalPriceILS: totalPriceILS.toFixed(0),
+    conversionRate: conversionRate
   };}
 // ---------------------------
 export function calculatePaymentPlan70(apartmentPrice, conversionRate, userCurrency) {
