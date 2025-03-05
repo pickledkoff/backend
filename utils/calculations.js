@@ -275,67 +275,57 @@ export function generatePDF(res, planData) {
   doc.font('Helvetica').fontSize(10);
   const keys = planData.keys; // e.g.: ["paymentStage", "percentEquity", "percentBank", "equityPaid", "bankFunded"]
   
-  planData.rows.forEach((row) => {
-    const rowHeight = 20;
-    // Draw cell borders for this row.
-    for (let i = 0; i < colWidths.length; i++) {
-      doc.rect(colX[i], currentY, colWidths[i], rowHeight).stroke();
-    }
+ planData.rows.forEach((row) => {
+  const rowHeight = 20;
+  
+  // Draw cell borders for each cell in the row.
+  for (let i = 0; i < colWidths.length; i++) {
+    doc.rect(colX[i], currentY, colWidths[i], rowHeight).stroke();
+  }
+  
+  // Now loop over each header (using planData.header) to decide how to render each cell.
+  planData.header.forEach((headerText, idx) => {
+    let cellValue = row[planData.keys[idx]];
+    const isMoney = headerText.includes('$'); // if header contains $, treat cell as money.
     
-    // For each column/cell, render text:
-    keys.forEach((key, idx) => {
-      let cellValue = row[key];
-      
-      // For percentages (assume keys 1 and 2), they already are strings like "3%"
-      if ((idx === 1 || idx === 2) && typeof cellValue === 'string' && cellValue.includes('%')) {
-        // Ensure no decimals:
-        const perc = parseFloat(cellValue);
-        cellValue = Math.round(perc) + '%';
-      }
-      // For monetary cells (assume keys 3 and 4), if value is 0 then leave blank; otherwise format.
-      else if (idx === 3 || idx === 4) {
-        const num = Number(cellValue);
-        if (num === 0) {
-          cellValue = "";
-        } else {
-          // Here we want the $ sign left aligned and number right aligned.
-          // We'll split this into two parts: the dollar sign in a small box, and the formatted number in the rest.
-          // However, since PDFKit renders text sequentially in one cell,
-          // we simulate this by first rendering the $ sign with fixed width (say 10),
-          // then rendering the formatted number.
-          // We'll store both parts (we'll do that in the actual PDF drawing below).
-          cellValue = { money: num }; // We'll handle it specially.
-        }
-      }
-      
-      // For all cells, if value is null or undefined, set as empty string.
-      if (cellValue === null || cellValue === undefined) {
+    if (isMoney) {
+      // Convert cellValue to a number.
+      const num = Number(cellValue);
+      // If the value is 0 or not a valid number, make it empty.
+      if (isNaN(num) || num === 0) {
         cellValue = "";
+      } else {
+        // For money, we want an object so that we can render the $ sign separately.
+        cellValue = { money: num };
       }
-      
-      // For cells that were not processed specially, ensure they are strings.
-      if (typeof cellValue !== 'object') {
+    } else {
+      if (cellValue == null) {
+        cellValue = "";
+      } else {
         cellValue = cellValue.toString();
       }
-      
-      // Render cell:
-      // For monetary cells, if cellValue is an object, we render $ and then number.
-      if ((idx === 3 || idx === 4) && typeof cellValue === 'object') {
-        // Render '$' in a fixed width (say 10) left aligned, then the number in remainder right aligned.
-        doc.text('$', colX[idx] + 5, currentY + 5, { width: 10, align: 'left', continued: true });
-        doc.text(formatNumber(Math.round(cellValue.money)), colX[idx] + 15, currentY + 5, { width: colWidths[idx] - 15, align: 'right' });
-      } else {
-        // For the other cells:
-        const align = idx === 0 ? 'center' : 'right';
-        doc.text(cellValue, colX[idx] + 5, currentY + 5, {
-          width: colWidths[idx] - 10,
-          align: align
-        });
-      }
-    });
+    }
     
-    currentY += rowHeight;
+    // Determine the alignment: for the first column, 'center', otherwise 'right'
+    const align = idx === 0 ? 'center' : 'right';
+    
+    if (isMoney && typeof cellValue === 'object') {
+      // Render the "$" sign left-aligned in a fixed 10-point area,
+      // then render the formatted number in the remaining cell width.
+      doc.text('$', colX[idx] + 5, currentY + 5, { width: 10, align: 'left', continued: true });
+      doc.text(formatNumber(Math.round(cellValue.money)), colX[idx] + 15, currentY + 5, {
+        width: colWidths[idx] - 15,
+        align: 'right'
+      });
+    } else {
+      // Simply render text.
+      doc.text(cellValue, colX[idx] + 5, currentY + 5, { width: colWidths[idx] - 10, align: align });
+    }
+    
   });
+  
+  currentY += rowHeight;
+});
   
   doc.end();
 }
