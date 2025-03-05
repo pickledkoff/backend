@@ -2,7 +2,9 @@ import PDFDocument from 'pdfkit';
 export function calculatePaymentPlan(apartmentPrice, conversionRate, userCurrency) {
   const totalPriceUSD = userCurrency === 'USD' ? apartmentPrice : apartmentPrice / conversionRate;
   const totalPriceILS = userCurrency === 'USD' ? apartmentPrice * conversionRate : apartmentPrice;
-
+  // Define headers for the table (they may differ depending on financing option)
+  const headers = ['Payment Stage', 'Amount (ILS)', 'Amount (USD)', 'Percent', 'Cumulative (USD)'];
+  
   const paymentStages = [
     { stage: "At Signing of Contract", percent: 0.15 },
     { stage: "6 months", percent: 0.12 },
@@ -32,8 +34,14 @@ export function calculatePaymentPlan(apartmentPrice, conversionRate, userCurrenc
   const totalILS = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayILS), 0).toFixed(2);
   const totalUSD = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayUSD), 0).toFixed(2);
 
-  return { totalPriceUSD, totalPriceILS, rows, totalILS, totalUSD };
-}
+return {
+    header: headers,
+    rows,
+    totalILS,
+    totalUSD,
+    totalPriceUSD: totalPriceUSD.toFixed(2),
+    totalPriceILS: totalPriceILS.toFixed(2)
+  };}
 
 export function generatePDF(res, planData) {
   // Create a new PDF document: using A4 size with 50pt margins
@@ -57,7 +65,7 @@ export function generatePDF(res, planData) {
   // We'll define columns with fixed widths that sum to less than 495.
   const startX = doc.page.margins.left; // 50
   const tableTop = doc.y;
-  // Define columns: Payment Stage | Amount (ILS) | Amount (USD) | Percent | Cumulative (USD)
+  // Define columns
   const colWidths = [150, 90, 90, 70, 90];
   // Calculate x positions for each column using the starting x and cumulative widths:
   const colX = [];
@@ -66,13 +74,20 @@ export function generatePDF(res, planData) {
     colX[i] = colX[i - 1] + colWidths[i - 1];
   }
 
+  const headers = planData.header 
+  
   // Draw table header with a bold font
   doc.fontSize(10).font('Helvetica-Bold');
-  doc.text('Payment Stage', colX[0] + 5, tableTop + 5, { width: colWidths[0] - 10, align: 'center' });
-  doc.text('Amount (ILS)', colX[1] + 5, tableTop + 5, { width: colWidths[1] - 10, align: 'right' });
-  doc.text('Amount (USD)', colX[2] + 5, tableTop + 5, { width: colWidths[2] - 10, align: 'right' });
-  doc.text('Percent', colX[3] + 5, tableTop + 5, { width: colWidths[3] - 10, align: 'right' });
-  doc.text('Cumulative (USD)', colX[4] + 5, tableTop + 5, { width: colWidths[4] - 10, align: 'right' });
+
+// Loop through headers and print them in proper columns:
+headers.forEach((headerText, index) => {
+  // For this example, for columns after the first, we align to right:
+  const alignment = index === 0 ? 'center' : 'right';
+  doc.text(headerText, colX[index] + 5, tableTop + 5, { 
+    width: colWidths[index] - 10, 
+    align: alignment 
+  });
+});
   
   // Draw header row border
   const headerHeight = 20;
