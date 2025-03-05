@@ -311,13 +311,14 @@ export function generatePDF(res, planData) {
     const align = idx === 0 ? 'center' : 'right';
     
     if (isMoneyColumn && typeof cellValue === 'object') {
-      // Render the "$" sign in a fixed width (10 pts, left-aligned)
-      doc.text('$', colX[idx] + 5, currentY + 5, { width: 10, align: 'left', continued: true });
-      // Then render the formatted number in the remaining space (right-aligned)
-      doc.text(formatNumber(cellValue.money), colX[idx] + 15, currentY + 5, { width: colWidths[idx] - 15, align: 'right' });
-    } else {
-      doc.text(cellValue, colX[idx] + 5, currentY + 5, { width: colWidths[idx] - 10, align: align });
-    }
+  // Render '$' in a fixed width (10 pts) left-aligned
+  doc.text('$', colX[idx] + 5, currentY + 5, { width: 10, align: 'left' });
+  // Render the formatted number right-aligned in the remaining space
+  doc.text(formatNumber(cellValue.money), colX[idx] + 15, currentY + 5, { width: colWidths[idx] - 15, align: 'right' });
+} else {
+  // Render non-money cells
+  doc.text(cellValue, colX[idx] + 5, currentY + 5, { width: colWidths[idx] - 10, align: align });
+}
   });
   
   currentY += rowHeight;
