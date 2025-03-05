@@ -37,7 +37,7 @@ const totalPercentBank = paymentStages.reduce((sum, stage) => sum + stage.percen
 const totalEquityPaid = paymentStages.reduce((sum, stage) => sum + (stage.percentEquity * totalPriceUSD), 0);
 const totalBankFunded = paymentStages.reduce((sum, stage) => sum + (stage.percentBank * totalPriceUSD), 0);
 
-// Create blank row with explicitly empty strings
+// Create blank row (empty strings)
 const blankRow = {
   paymentStage: '',
   percentEquity: '',
@@ -46,7 +46,7 @@ const blankRow = {
   bankFunded: ''
 };
 
-// Create totals row with formatted values
+// Create totals row; note toFixed(0) is used so no decimals are shown.
 const totalsRow = {
   paymentStage: 'Total',
   percentEquity: (totalPercentEquity * 100).toFixed(0) + '%',
@@ -59,7 +59,6 @@ const totalsRow = {
 rows.push(blankRow);
 rows.push(totalsRow);
 
-// Return object, including formatted totalPriceUSD and totalPriceILS if needed:
 return {
   header: headers,
   keys: keys,
