@@ -231,97 +231,91 @@ export function generatePDF(res, planData) {
   doc.fontSize(16).font('Helvetica-Bold').text('Payment Plan', { align: 'center' });
   doc.moveDown(2);
   
-  // Define columns.
-  const startX = doc.page.margins.left; // e.g., 50
+  // Define columns
+  const startX = doc.page.margins.left;
   const tableTop = doc.y;
-  // Base widths for cells. These values will be adjusted for headers that include "Percent"
-  const baseColWidths = [150, 100, 100, 100, 100];
-  
-  // Adjust column widths if header contains "Percent"
+  const baseColWidths = [150, 90, 90, 70, 90];
+
+  // Adjust column widths for 'Percent'
   const headers = planData.header;
-  // For each header, if it contains "Percent", reduce its column width by 20%
   const colWidths = headers.map((header, i) =>
     header.toLowerCase().includes("percent") ? baseColWidths[i] * 0.8 : baseColWidths[i]
   );
   
-  // Calculate x positions for each column
   const colX = [];
   colX[0] = startX;
   for (let i = 1; i < colWidths.length; i++) {
     colX[i] = colX[i - 1] + colWidths[i - 1];
   }
   
-  // Increase header height to allow text wrapping (e.g., from 20 to 30)
-  const headerHeight = 30;
+  const headerHeight = 30; // Increased for text wrapping
   
-  // Draw headers using dynamic header text.
+  // Draw centered headers
   doc.fontSize(10).font('Helvetica-Bold');
   headers.forEach((headerText, index) => {
-    // We use center for the first column, right for the rest.
-    const alignment = index === 0 ? 'center' : 'right';
     doc.text(headerText, colX[index] + 5, tableTop + 5, {
       width: colWidths[index] - 10,
-      align: alignment
+      align: 'center' // Center alignment for headers
     });
   });
   
-  // Draw header border
   for (let i = 0; i < colWidths.length; i++) {
     doc.rect(colX[i], tableTop, colWidths[i], headerHeight).stroke();
   }
   
-  // Start drawing rows after header.
   let currentY = tableTop + headerHeight;
   doc.font('Helvetica').fontSize(10);
-  const keys = planData.keys; // e.g.: ["paymentStage", "percentEquity", "percentBank", "equityPaid", "bankFunded"]
+  const keys = planData.keys;
   
- planData.rows.forEach((row) => {
-  const rowHeight = 20;
-  // Draw borders for each cell in the row
-  for (let i = 0; i < colWidths.length; i++) {
-    doc.rect(colX[i], currentY, colWidths[i], rowHeight).stroke();
-  }
-
-  // Loop through each header (using planData.header)
-  planData.header.forEach((headerText, idx) => {
-    // Use the corresponding key for this column
-    let cellValue = row[planData.keys[idx]];
-    
-    // Determine if this column is money by testing if headerText contains '$'
-    const isMoneyColumn = headerText.includes('$');
-    
-    if (isMoneyColumn) {
-      // Convert cellValue to a number.
-      const num = Number(cellValue);
-      if (isNaN(num) || num === 0) {
-        cellValue = "";
-      } else {
-        cellValue = { money: num };
-      }
-    } else {
-      // For all other cells, if cellValue is null, set it as an empty string.
-      if (cellValue == null) {
-        cellValue = "";
-      } else {
-        cellValue = cellValue.toString();
-      }
+  planData.rows.forEach((row) => {
+    const rowHeight = 20;
+    for (let i = 0; i < colWidths.length; i++) {
+      doc.rect(colX[i], currentY, colWidths[i], rowHeight).stroke();
     }
     
-    // Set alignment: for first column use 'center', else 'right'
-    const align = idx === 0 ? 'center' : 'right';
+    keys.forEach((key, idx) => {
+      let cellValue = row[key];
+      const isMoneyColumn = headers[idx].includes('$');
+      
+      if (isMoneyColumn) {
+        const num = Number(cellValue);
+        if (isNaN(num) || num === 0) {
+          cellValue = "";
+        } else {
+          cellValue = { money: num };
+        }
+      } else {
+        if (cellValue == null) {
+          cellValue = "";
+        } else {
+          cellValue = cellValue.toString();
+        }
+      }
+      
+      const align = idx === 0 ? 'center' : 'right';
+
+      if (isMoneyColumn && typeof cellValue === 'object') {
+        doc.text('$', colX[idx] + 5, currentY + 5, { width: 10, align: 'left' });
+        doc.text(formatNumber(cellValue.money), colX[idx] + 15, currentY + 5, {
+          width: colWidths[idx] - 20, // Reduced width for padding from right
+          align: 'right'
+        });
+      } else {
+        // Adjust width for right-aligned cells to add visual padding
+        const textAlignAdjust = align === 'right' ? 5 : 0;
+        doc.text(cellValue, colX[idx] + 5, currentY + 5, {
+          width: colWidths[idx] - 10 - textAlignAdjust, // Extra space from right
+          align
+        });
+      }
+      
+    });
     
-    if (isMoneyColumn && typeof cellValue === 'object') {
-  // Render '$' in a fixed width (10 pts) left-aligned
-  doc.text('$', colX[idx] + 5, currentY + 5, { width: 10, align: 'left' });
-  // Render the formatted number right-aligned in the remaining space
-  doc.text(formatNumber(cellValue.money), colX[idx] + 15, currentY + 5, { width: colWidths[idx] - 15, align: 'right' });
-} else {
-  // Render non-money cells
-  doc.text(cellValue, colX[idx] + 5, currentY + 5, { width: colWidths[idx] - 10, align: align });
-}
+    currentY += rowHeight;
   });
-  currentY += rowHeight;
-});
+  
+  doc.moveDown(2).fontSize(11)
+    .text('Delivery time: 36 months', { align: 'left' });
   
   doc.end();
 }
