@@ -33,7 +33,7 @@ export default async function handler(req, res) {
     // Convert conversionRate to a number with a new name
     const conversionRateNum = Number(conversionRate);
     const apartmentPriceNum = Number(apartmentPrice);
-    const planData = calculatePaymentPlan0(apartmentPriceNum, conversionRateNum, currency);
+    const planData = calculatePaymentPlan50(apartmentPriceNum, conversionRateNum, currency);
 
     // Generate PDF
    generatePDF(res, planData);
