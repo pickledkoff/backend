@@ -218,7 +218,7 @@ return {
 export function generatePDF(res, planData) {
   const doc = new PDFDocument({ size: 'A4', margin: 50 });
   let buffers = [];
-
+  
   doc.on('data', buffers.push.bind(buffers));
   doc.on('end', () => {
     const pdfData = Buffer.concat(buffers);
@@ -226,84 +226,117 @@ export function generatePDF(res, planData) {
     res.setHeader('Content-Disposition', 'attachment; filename=payment-plan.pdf');
     res.end(pdfData);
   });
-
+  
   // Title
   doc.fontSize(16).font('Helvetica-Bold').text('Payment Plan', { align: 'center' });
   doc.moveDown(2);
-
-  // Define columns with updated width for "$ Equity Paid"
-  const startX = doc.page.margins.left;
-  const tableTop = doc.y;
-  const colWidths = [150, 90, 130, 70, 90]; // Adjusted widths
   
-  // Calculate x positions
+  // Define columns.
+  const startX = doc.page.margins.left; // e.g., 50
+  const tableTop = doc.y;
+  // Base widths for cells. These values will be adjusted for headers that include "Percent"
+  const baseColWidths = [150, 90, 90, 70, 90];
+  
+  // Adjust column widths if header contains "Percent"
+  const headers = planData.header;
+  // For each header, if it contains "Percent", reduce its column width by 20%
+  const colWidths = headers.map((header, i) =>
+    header.toLowerCase().includes("percent") ? baseColWidths[i] * 0.8 : baseColWidths[i]
+  );
+  
+  // Calculate x positions for each column
   const colX = [];
   colX[0] = startX;
   for (let i = 1; i < colWidths.length; i++) {
     colX[i] = colX[i - 1] + colWidths[i - 1];
   }
-
-  // Use dynamic headers
-  const headers = planData.header;
-  const keys = planData.keys;
-
-  // Draw table headers with wrapping
+  
+  // Increase header height to allow text wrapping (e.g., from 20 to 30)
+  const headerHeight = 30;
+  
+  // Draw headers using dynamic header text.
   doc.fontSize(10).font('Helvetica-Bold');
   headers.forEach((headerText, index) => {
-    const alignment = (index === 0) ? 'center' : 'right';
+    // We use center for the first column, right for the rest.
+    const alignment = index === 0 ? 'center' : 'right';
     doc.text(headerText, colX[index] + 5, tableTop + 5, {
       width: colWidths[index] - 10,
-      align: alignment,
-      characterSpacing: 0.75, // Slightly adjust to aid wrapping
-      lineGap: 3 // Add space between lines if wrapped
+      align: alignment
     });
   });
-
+  
   // Draw header border
-  const headerHeight = 40; // Increased for better text wrapping
   for (let i = 0; i < colWidths.length; i++) {
     doc.rect(colX[i], tableTop, colWidths[i], headerHeight).stroke();
   }
-
-  // Start rows after header
+  
+  // Start drawing rows after header.
   let currentY = tableTop + headerHeight;
   doc.font('Helvetica').fontSize(10);
-
-  // Draw data rows
+  const keys = planData.keys; // e.g.: ["paymentStage", "percentEquity", "percentBank", "equityPaid", "bankFunded"]
+  
   planData.rows.forEach((row) => {
     const rowHeight = 20;
+    // Draw cell borders for this row.
     for (let i = 0; i < colWidths.length; i++) {
       doc.rect(colX[i], currentY, colWidths[i], rowHeight).stroke();
     }
-
-    // Insert row data
+    
+    // For each column/cell, render text:
     keys.forEach((key, idx) => {
       let cellValue = row[key];
-      const num = Number(cellValue);
-      if ((idx === 3 || idx === 4) && num === 0) {
-        cellValue = "";
-      } else if (!isNaN(num)) {
-        cellValue = '$' + formatNumber(num);
+      
+      // For percentages (assume keys 1 and 2), they already are strings like "3%"
+      if ((idx === 1 || idx === 2) && typeof cellValue === 'string' && cellValue.includes('%')) {
+        // Ensure no decimals:
+        const perc = parseFloat(cellValue);
+        cellValue = Math.round(perc) + '%';
       }
-
-      if (cellValue == null) {
+      // For monetary cells (assume keys 3 and 4), if value is 0 then leave blank; otherwise format.
+      else if (idx === 3 || idx === 4) {
+        const num = Number(cellValue);
+        if (num === 0) {
+          cellValue = "";
+        } else {
+          // Here we want the $ sign left aligned and number right aligned.
+          // We'll split this into two parts: the dollar sign in a small box, and the formatted number in the rest.
+          // However, since PDFKit renders text sequentially in one cell,
+          // we simulate this by first rendering the $ sign with fixed width (say 10),
+          // then rendering the formatted number.
+          // We'll store both parts (we'll do that in the actual PDF drawing below).
+          cellValue = { money: num }; // We'll handle it specially.
+        }
+      }
+      
+      // For all cells, if value is null or undefined, set as empty string.
+      if (cellValue === null || cellValue === undefined) {
         cellValue = "";
-      } else {
+      }
+      
+      // For cells that were not processed specially, ensure they are strings.
+      if (typeof cellValue !== 'object') {
         cellValue = cellValue.toString();
       }
-
-      const align = idx === 0 ? 'center' : 'right';
-      doc.text(cellValue, colX[idx] + 5, currentY + 5, {
-        width: colWidths[idx] - 10,
-        align: align
-      });
+      
+      // Render cell:
+      // For monetary cells, if cellValue is an object, we render $ and then number.
+      if ((idx === 3 || idx === 4) && typeof cellValue === 'object') {
+        // Render '$' in a fixed width (say 10) left aligned, then the number in remainder right aligned.
+        doc.text('$', colX[idx] + 5, currentY + 5, { width: 10, align: 'left', continued: true });
+        doc.text(formatNumber(Math.round(cellValue.money)), colX[idx] + 15, currentY + 5, { width: colWidths[idx] - 15, align: 'right' });
+      } else {
+        // For the other cells:
+        const align = idx === 0 ? 'center' : 'right';
+        doc.text(cellValue, colX[idx] + 5, currentY + 5, {
+          width: colWidths[idx] - 10,
+          align: align
+        });
+      }
     });
-
+    
     currentY += rowHeight;
   });
-
-  doc.moveDown(2).fontSize(11).text('Delivery time: 36 months', { align: 'left' });
-
+  
   doc.end();
 }
 
