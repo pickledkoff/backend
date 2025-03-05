@@ -1,4 +1,4 @@
-import { calculatePaymentPlan0, generatePDF } from '../utils/calculations.js';
+import { calculatePaymentPlan0, calculatePaymentPlan50, calculatePaymentPlan70, calculatePaymentPlan75, generatePDF } from '../utils/calculations.js';
 export default async function handler(req, res) {
   // Handle preflight requests
   if (req.method === "OPTIONS") {
