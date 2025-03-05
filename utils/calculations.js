@@ -63,8 +63,6 @@ return {
   header: headers,
   keys: keys,
   rows,
-  totalILS,
-  totalUSD,
   totalPriceUSD: totalPriceUSD.toFixed(2),
   totalPriceILS: totalPriceILS.toFixed(2)
 };}
@@ -291,21 +289,6 @@ export function generatePDF(res, planData) {
     });
     currentY += rowHeight;
   });
-
-  // Optional totals row
-  const totalsRowHeight = 20;
-  for (let i = 0; i < colWidths.length; i++) {
-    doc.rect(colX[i], currentY, colWidths[i], totalsRowHeight).stroke();
-  }
-  doc.font('Helvetica-Bold');
-  doc.text('Total', colX[0] + 5, currentY + 5, { width: colWidths[0] - 10 });
-  // Right-align numeric totals (without currency symbols)
-  doc.text(formatNumber(planData.totalILS), colX[1] + 5, currentY + 5, { width: colWidths[1] - 10, align: 'right' });
-  doc.text(formatNumber(planData.totalUSD), colX[2] + 5, currentY + 5, { width: colWidths[2] - 10, align: 'right' });
-  doc.text('', colX[3] + 5, currentY + 5, { width: colWidths[3] - 10, align: 'right' });
-  doc.text(formatNumber(planData.totalUSD), colX[4] + 5, currentY + 5, { width: colWidths[4] - 10, align: 'right' });
-
-  currentY += totalsRowHeight;
 
   // Optional extra info
   doc.moveDown(2).fontSize(11)
