@@ -131,7 +131,16 @@ export function calculatePaymentPlan0(apartmentPrice, conversionRate, userCurren
     equityPaid: '',
     bankFunded: ''
   };
+// Create Message row 
+const message = {
+  paymentStage: 'DELIVERY TIME',
+  percentEquity: '36 MONTHS',
+  percentBank: '',
+  equityPaid: '',
+  bankFunded: '',
+};
   rows.push(blankRow);
+  rows.push(message);
   
 return {
     header: headers,
