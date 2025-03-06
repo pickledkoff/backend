@@ -234,8 +234,8 @@ const closingCosts = {
   paymentStage: 'Closing Costs Est',
   percentEquity: 10 + '%',
   percentBank: '',
-  equityPaid: Math.round(totalPriceUSD * .1),
-  bankFunded: '0',
+  equityPaid: '',
+  bankFunded: 'Math.round(totalPriceUSD * .1)',
 };
 
 // Append blank row and totals row
