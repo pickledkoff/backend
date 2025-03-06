@@ -320,49 +320,74 @@ export function generatePDF(res, planData) {
   // ---------------------------------------------------
   // Draw the left banner with apt details (yellow background)
   // ---------------------------------------------------
-  const firstColWidth = 150;   // width of the left banner
-const bannerHeight2 = 50;    // height for the left banner
+ const firstColWidth = 150;   // width of the left banner
+const bannerHeight2 = 50;    // banner height for apt details
 const currentY = doc.y;      // current y position for the left banner
 
 // Draw the left banner with a yellow background and black border.
 doc.rect(startX, currentY, firstColWidth, bannerHeight2)
   .fillAndStroke('#FFFF00', '#000000');
 
-// Set font styling
+// Set the detail font size and define line spacing.
 const detailFontSize = 8;
-doc.fillColor('#000000').fontSize(detailFontSize);
+doc.fontSize(detailFontSize);
+const lineSpacing = 4;  // spacing between lines
 
-// Define a fixed line spacing (you can adjust if needed)
-const lineSpacing = 4;
-
-// Measure the height of one line of text using a typical sample text.
+// Measure a typical line height (using a sample string)
 const measuredLineHeight = doc.heightOfString('M', { width: firstColWidth });
 
-// There are 3 lines; compute total text height.
+// There are three lines; compute total text height.
 const numberOfLines = 3;
 const totalTextHeight = numberOfLines * measuredLineHeight + (numberOfLines - 1) * lineSpacing;
 
-// Compute vertical padding so that the text block is centered in the banner.
+// Compute vertical padding so that the text block is vertically centered in the banner.
 const verticalPadding = (bannerHeight2 - totalTextHeight) / 2;
 
-// Prepare formatted strings that include commas.
-const exchangeRateText = 'Current exchange rate: ' + planData.conversionRate;
-const usdText = 'Purchase Price (USD): $' + formatNumber(planData.totalPriceUSD);
-const ilsText = 'Purchase Price (ILS): ' + formatNumber(planData.totalPriceILS);
+// Function to draw one line with a bold label and regular value, both centered horizontally.
+function drawInlineText(lineY, labelText, valueText) {
+  // Ensure the value is a string.
+  const valueStr = valueText.toString();
+  
+  // Use bold font to measure the label.
+  doc.font('Helvetica-Bold');
+  const labelWidth = doc.widthOfString(labelText, { fontSize: detailFontSize });
+  
+  // Switch to regular font to measure the value.
+  doc.font('Helvetica');
+  const valueWidth = doc.widthOfString(valueStr, { fontSize: detailFontSize });
+  
+  // Total combined width.
+  const totalLineWidth = labelWidth + valueWidth;
+  
+  // Calculate starting X position so that the combined text is centered.
+  const startLineX = startX + (firstColWidth - totalLineWidth) / 2;
+  
+  // Draw the bold label (no line break).
+  doc.font('Helvetica-Bold').text(labelText, startLineX, lineY, {
+    continued: false,
+    lineBreak: false,
+  });
+  
+  // Draw the value text immediately to the right.
+  doc.font('Helvetica').text(valueStr, startLineX + labelWidth, lineY, {
+    lineBreak: false,
+  });
+}
 
-// Write the three lines of text with vertical centering.
-doc.text(exchangeRateText, startX, currentY + verticalPadding, {
-  width: firstColWidth,
-  align: 'center'
-});
-doc.text(usdText, startX, currentY + verticalPadding + measuredLineHeight + lineSpacing, {
-  width: firstColWidth,
-  align: 'center'
-});
-doc.text(ilsText, startX, currentY + verticalPadding + 2 * (measuredLineHeight + lineSpacing), {
-  width: firstColWidth,
-  align: 'center'
-});
+// Prepare the text strings.
+const exchangeRateLabel = "Current exchange rate: ";
+const exchangeRateValue = planData.conversionRate;
+
+const usdLabel = "Purchase Price (USD): ";
+const usdValue = "$" + formatNumber(planData.totalPriceUSD);
+
+const ilsLabel = "Purchase Price (ILS): ";
+const ilsValue = formatNumber(planData.totalPriceILS);
+
+// Draw each line with appropriate vertical offset.
+drawInlineText(currentY + verticalPadding, exchangeRateLabel, exchangeRateValue);
+drawInlineText(currentY + verticalPadding + measuredLineHeight + lineSpacing, usdLabel, usdValue);
+drawInlineText(currentY + verticalPadding + 2 * (measuredLineHeight + lineSpacing), ilsLabel, ilsValue);
   
   // ---------------------------------------------------
   // Draw "Payment Plan" title centered on the page.
