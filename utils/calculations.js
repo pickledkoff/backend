@@ -321,7 +321,7 @@ export function generatePDF(res, planData) {
   doc.fontSize(16).font('Helvetica-Bold').text('Payment Plan', { align: 'center' });
   doc.moveDown(2);
   
-  // Draw a banner
+  // Draw financingPercent banner
   const bannerHeight = 30;
   doc.rect(startX, doc.y, doc.page.width - 2 * startX, bannerHeight)
     .fillAndStroke('#ADD8E6', '#000000');  // Light blue banner with black border
@@ -335,6 +335,18 @@ export function generatePDF(res, planData) {
   
   // Move down after the banner
   doc.moveDown(2);
+  
+   // Draw apt details banner
+  const bannerHeight = 20;
+  doc.rect(startX, doc.y, doc.page.width - 2 * startX, bannerHeight)
+    .fillAndStroke('#ADD8E6', '#000000');  // Light blue banner with black border
+  
+  doc.fillColor('#000000')
+    .fontSize(12)
+    .text('Current exchange rate: ' + planData.conversionRate + 'Purchase Price (USD): $' + planData.totalUSD, startX, doc.y + bannerHeight / 2 - 6, {
+      width: doc.page.width - 2 * startX,
+      align: 'center'
+    });
   
   // Define columns
   const tableTop = doc.y;
@@ -421,9 +433,6 @@ export function generatePDF(res, planData) {
     
     currentY += rowHeight;
   });
-  
-  doc.moveDown(2).fontSize(11)
-    .text('Exchange rate: ' + planData.conversionRate, { align: 'left' });
   
   doc.end();
 }
