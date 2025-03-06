@@ -320,8 +320,8 @@ export function generatePDF(res, planData) {
   // ---------------------------------------------------
   // Draw the left banner with apt details (yellow background)
   // ---------------------------------------------------
-  const firstColWidth = 150;  // width of the left banner
-  const bannerHeight2 = 40;   // banner height for apt details
+  const firstColWidth = 180;  // width of the left banner
+  const bannerHeight2 = 60;   // banner height for apt details
   const currentY = doc.y;     // current y position
   
   // Fill left banner with yellow (#FFFF00) and add a black border.
@@ -329,9 +329,9 @@ export function generatePDF(res, planData) {
     .fillAndStroke('#FFFF00', '#000000');
   
   // Set up font style for details inside the banner
-  doc.fillColor('#000000').fontSize(10);
+  doc.fillColor('#000000').fontSize(8);
   const textPadding = 4;
-  const lineSpacing = 12;
+  const lineSpacing = 10;
   
   // Add commas to the purchase prices by formatting the numbers.
   // (Uses the helper function formatNumber defined below.)
