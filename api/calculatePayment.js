@@ -38,34 +38,21 @@ export default async function handler(req, res) {
 
     // Determine which payment plan calculation to use based on percentFinancing
     switch (percentFinancing) {
-       console.log("in switch:", percentFinancing);
-
       case 50:
-                       console.log("in 50:", percentFinancing);
-
         planData = calculatePaymentPlan50(apartmentPriceNum, conversionRateNum, currency);
 
         break;
       case 75:
-                               console.log("in 75:", percentFinancing);
-
         planData = calculatePaymentPlan75(apartmentPriceNum, conversionRateNum, currency);
-
         break;
+        
       case 70:
-                                       console.log("in 70:", percentFinancing);
-
         planData = calculatePaymentPlan70(apartmentPriceNum, conversionRateNum, currency);
-
         break;
       case 0:
-                       console.log("in 0:", percentFinancing);
-
         planData = calculatePaymentPlan0(apartmentPriceNum, conversionRateNum, currency);
         break;
       default:
-                       console.log("nada error default:", percentFinancing);
-
         return res.status(400).json({ error: "Invalid percentFinancing value" });
     }
     
