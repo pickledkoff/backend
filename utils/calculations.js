@@ -338,13 +338,13 @@ export function generatePDF(res, planData) {
 
   // Code for second banner
   const firstColWidth = 150;  // This is the same as baseColWidths[0]
-  const bannerHeight = 40;    // Increase banner height if needed
+  const bannerHeight2 = 40;    // Increase banner height if needed
   
   // Record the current Y coordinate for our banner's top
   const bannerY = doc.y;
 
   // Draw the banner as a rectangle, with the width equal to the first column only
-  doc.rect(startX, bannerY, firstColWidth, bannerHeight)
+  doc.rect(startX, bannerY, firstColWidth, bannerHeight2)
     .fillAndStroke('#ADD8E6', '#000000');  // Light blue background with black border
 
   // Set up font and fill style for the text
