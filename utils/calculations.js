@@ -172,46 +172,86 @@ export function calculatePaymentPlan70(apartmentPrice, conversionRate, userCurre
   const totalPriceUSD = userCurrency === 'USD' ? apartmentPrice : apartmentPrice / conversionRate;
   const totalPriceILS = userCurrency === 'USD' ? apartmentPrice * conversionRate : apartmentPrice;
   // Define headers for the table (they may differ depending on financing option)
-  const headers = ['Payment Stage', 'Amount (ILS)', 'Amount (USD)', 'Percent', 'Cumulative (USD)'];
-  const keys = ["paymentStage", "amountToPayILS", "amountToPayUSD", "percent", "cumulative"];
+  const headers = ['Payment Stage', 'Percent Equity Paid', 'Percent Bank', '$ Equity Paid', '$ Bank Funded'];
+  const keys = ['paymentStage', 'percentEquity', 'percentBank', 'equityPaid', 'bankFunded'];
 
-  const paymentStages = [
-    { stage: "At Signing of Contract", percent: 0.15 },
-    { stage: "6 months", percent: 0.12 },
-    { stage: "12 months", percent: 0.12 },
-    { stage: "18 months", percent: 0.12 },
-    { stage: "24 months", percent: 0.11 },
-    { stage: "30 months", percent: 0.11 },
-    { stage: "36 Months", percent: 0.12 },
-    { stage: "Delivery of the apartment", percent: 0.15 },
-  ];
+const paymentStages = [
+  { stage: "At Signing of Contract", percentEquity: 0.15, percentBank: 0 },
+  { stage: "6 months", percentEquity: 0.00, percentBank: 0.12 },
+  { stage: "12 months", percentEquity: 0.00, percentBank: 0.12 },
+  { stage: "18 months", percentEquity: 0.00, percentBank: 0.12 },
+  { stage: "24 months", percentEquity: 0.00, percentBank: 0.12 },
+  { stage: "30 months", percentEquity: 0.00, percentBank: 0.11 },
+  { stage: "36 Months", percentEquity: 0.00, percentBank: 0.11 },
+  { stage: "Delivery of the apartment", percentEquity: 0.15, percentBank: 0 },
+];
 
-  let cumulativeUSD = 0;
-  const rows = paymentStages.map((stage) => {
-    const amountToPayUSD = totalPriceUSD * stage.percent;
-    const amountToPayILS = totalPriceILS * stage.percent;
-    cumulativeUSD += amountToPayUSD;
+  // Build rows by calculating each required field
+  const rows = paymentStages.map(stage => {
+  // Calculate the raw amounts in USD
+  const equityPaidUSD = stage.percentEquity * totalPriceUSD;
+  const bankFundedUSD = stage.percentBank * totalPriceUSD;
 
-    return {
-      paymentStage: stage.stage,
-      amountToPayILS: amountToPayILS.toFixed(2),
-      amountToPayUSD: amountToPayUSD.toFixed(2),
-      percent: (stage.percent * 100).toFixed(2) + '%',
-      cumulative: cumulativeUSD.toFixed(2)
-    };
-  });
+  // Round and format, checking if the amount actually rounds to zero
+  const equityPaidRounded = Math.round(equityPaidUSD);
+  const bankFundedRounded = Math.round(bankFundedUSD);
 
-  const totalILS = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayILS), 0).toFixed(2);
-  const totalUSD = rows.reduce((sum, row) => sum + parseFloat(row.amountToPayUSD), 0).toFixed(2);
+  return {
+    paymentStage: stage.stage,
+    percentEquity: stage.percentEquity === 0 ? '' : (stage.percentEquity * 100).toFixed(0) + '%',
+    percentBank: stage.percentBank === 0 ? '' : (stage.percentBank * 100).toFixed(0) + '%',
+    equityPaid: equityPaidRounded === 0 ? '' : equityPaidRounded,
+    bankFunded: bankFundedRounded === 0 ? '' : bankFundedRounded,
+  };
+});
+
+// Calculate totals (using raw numeric values)
+const totalPercentEquity = paymentStages.reduce((sum, stage) => sum + stage.percentEquity, 0);
+const totalPercentBank = paymentStages.reduce((sum, stage) => sum + stage.percentBank, 0);
+const totalEquityPaid = paymentStages.reduce((sum, stage) => sum + (stage.percentEquity * totalPriceUSD), 0);
+const totalBankFunded = paymentStages.reduce((sum, stage) => sum + (stage.percentBank * totalPriceUSD), 0);
+
+// Create a blank row with empty strings
+const blankRow = {
+  paymentStage: '',
+  percentEquity: '',
+  percentBank: '',
+  equityPaid: '',
+  bankFunded: ''
+};
+
+// Create totals row with the same logic
+const totalsRow = {
+  paymentStage: 'Total',
+  percentEquity: totalPercentEquity === 0 ? '' : (totalPercentEquity * 100).toFixed(0) + '%',
+  percentBank: totalPercentBank === 0 ? '' : (totalPercentBank * 100).toFixed(0) + '%',
+  equityPaid: Math.round(totalEquityPaid) === 0 ? '' : Math.round(totalEquityPaid),
+  bankFunded: Math.round(totalBankFunded) === 0 ? '' : Math.round(totalBankFunded),
+};
+  
+// Create closing costs row 
+const closingCosts = {
+  paymentStage: 'Closing Costs Est',
+  percentEquity: 10 + '%',
+  percentBank: '',
+  equityPaid: Math.round(totalPriceUSD * .1),
+  bankFunded: '0',
+};
+
+// Append blank row and totals row
+rows.push(blankRow);
+rows.push(totalsRow);
+rows.push(blankRow);
+rows.push(closingCosts);
 
 return {
-    header: headers,
-    keys: keys,
-    rows,
-    totalILS,
-    totalUSD,
-    totalPriceUSD: totalPriceUSD.toFixed(2),
-    totalPriceILS: totalPriceILS.toFixed(2)
+  header: headers,
+  keys: keys,
+  rows,
+  totalPriceUSD: Math.round(totalPriceUSD),
+  totalPriceILS: Math.round(totalPriceILS),
+  conversionRate: conversionRate,
+  bannerText: '70% Financing'
   };}
 // ------------------------------------------
 
