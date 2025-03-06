@@ -317,15 +317,65 @@ export function generatePDF(res, planData) {
   // Define startX early so it's available throughout.
   const startX = doc.page.margins.left; // e.g., 50
 
-  // Title
-  doc.fontSize(16).font('Helvetica-Bold').text('Payment Plan', { align: 'center' });
-  doc.moveDown(2);
+  // ---------------------------
+  // Build Header Row with two parts:
+  // Part A: Left banner with details (apt details banner)
+  // Part B: Payment Plan Title to the right of it
+  // ---------------------------
+  const firstColWidth = 150;  // width of the left banner
+  const bannerHeight2 = 40;   // height for the left banner
+  const headerY = doc.y;      // current y for our header row
+  const gap = 10;             // gap between the banner and the title
   
-  // Draw financingPercent banner
+  // Draw the left banner (apt details banner)
+  doc.rect(startX, headerY, firstColWidth, bannerHeight2)
+    .fillAndStroke('#ADD8E6', '#000000');  // Light blue fill with black border
+  
+  // Set smaller font for details inside the banner
+  doc.fillColor('#000000').fontSize(10);
+  
+  const textPadding = 4;
+  const lineSpacing = 12; // adjust if needed
+  
+  doc.text('Current exchange rate: ' + planData.conversionRate, startX, headerY + textPadding, {
+    width: firstColWidth,
+    align: 'center'
+  });
+  
+  doc.text('Purchase Price (USD): $' + planData.totalPriceUSD, startX, headerY + textPadding + lineSpacing, {
+    width: firstColWidth,
+    align: 'center'
+  });
+  
+  doc.text('Purchase Price (ILS): ' + planData.totalPriceILS, startX, headerY + textPadding + 2 * lineSpacing, {
+    width: firstColWidth,
+    align: 'center'
+  });
+  
+  // Draw the Payment Plan title to the right of the left banner
+  // Adjust vertical alignment: here we center the title vertically relative to the left banner.
+  const titleX = startX + firstColWidth + gap;
+  doc.font('Helvetica-Bold').fontSize(16);
+  // To vertically center, we use bannerHeight2/2 minus roughly half the font size
+  const titleY = headerY + bannerHeight2 / 2 - 8; 
+  doc.text('Payment Plan', titleX, titleY, {
+    // We can span to a width equal to the remaining width from startX to the right margin:
+    width: doc.page.width - startX - firstColWidth - gap,
+    align: 'left'
+  });
+  
+  // Move down to end the header row.
+  // We'll set our new y position below the header row.
+  doc.y = headerY + bannerHeight2 + 20; // add extra spacing if desired
+  
+  // ---------------------------
+  // Now draw the other banner (financingPercent banner) full width below.
+  // ---------------------------
   const bannerHeight = 30;
   doc.rect(startX, doc.y, doc.page.width - 2 * startX, bannerHeight)
     .fillAndStroke('#ADD8E6', '#000000');  // Light blue banner with black border
   
+  // Draw text inside the financing banner
   doc.fillColor('#000000')
     .fontSize(12)
     .text(planData.bannerText, startX, doc.y + bannerHeight / 2 - 6, {
@@ -335,45 +385,12 @@ export function generatePDF(res, planData) {
   
   // Move down after the banner
   doc.moveDown(1);
-
-  // Code for second banner
-  const firstColWidth = 150;  // This is the same as baseColWidths[0]
-  const bannerHeight2 = 40;    // Increase banner height if needed
   
-  // Record the current Y coordinate for our banner's top
-  const bannerY = doc.y;
-
-  // Draw the banner as a rectangle, with the width equal to the first column only
-  doc.rect(startX, bannerY, firstColWidth, bannerHeight2)
-    .fillAndStroke('#ADD8E6', '#000000');  // Light blue background with black border
-
-  // Set up font and fill style for the text
-  doc.fillColor('#000000').fontSize(10);
-
-  // Define a small padding from the top of the banner for the first line of text
-  const textPadding = 4;
-  const lineSpacing = 12; // spacing between lines (adjust as needed)
-
-  // Write three lines of text inside the banner; center each within the banner's width
-  doc.text('Current exchange rate: ' + planData.conversionRate, startX, bannerY + textPadding, {
-    width: firstColWidth,
-    align: 'center'
-  });
-
-  doc.text('Purchase Price (USD): $' + planData.totalPriceUSD, startX, bannerY + textPadding + lineSpacing, {
-    width: firstColWidth,
-    align: 'center'
-  });
-
-  doc.text('Purchase Price (ILS): ' + planData.totalPriceILS, startX, bannerY + textPadding + 2 * lineSpacing, {
-    width: firstColWidth,
-    align: 'center'
-  });
-  
-  // Define columns
+  // ---------------------------
+  // Define columns for the rest of your table
+  // ---------------------------
   const tableTop = doc.y;
   const baseColWidths = [150, 100, 100, 100, 100];
-  // Adjust widths if header contains "percent"
   const headers = planData.header;
   const colWidths = headers.map((header, i) =>
     header.toLowerCase().includes("percent") ? baseColWidths[i] * 0.8 : baseColWidths[i]
@@ -425,7 +442,7 @@ export function generatePDF(res, planData) {
         if (isNaN(num) || num === 0) {
           cellValue = "";
         } else {
-          cellValue = { money: num };
+          cellValue = { money: num }; // wrap in object to format later.
         }
       } else {
         if (cellValue == null) {
@@ -437,14 +454,12 @@ export function generatePDF(res, planData) {
       
       const align = idx === 0 ? 'center' : 'right';
       if (isMoneyColumn && typeof cellValue === 'object') {
-        // Render '$' left-aligned in a fixed width area, number right-aligned in the remainder.
         doc.text('$', colX[idx] + 5, currentY + 5, { width: 10, align: 'left' });
         doc.text(formatNumber(cellValue.money), colX[idx] + 15, currentY + 5, {
           width: colWidths[idx] - 20,
           align: 'right'
         });
       } else {
-        // Add slight padding for right-aligned text.
         const textAlignAdjust = align === 'right' ? 5 : 0;
         doc.text(cellValue, colX[idx] + 5, currentY + 5, {
           width: colWidths[idx] - 10 - textAlignAdjust,
