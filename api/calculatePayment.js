@@ -33,8 +33,27 @@ export default async function handler(req, res) {
     // Convert conversionRate to a number with a new name
     const conversionRateNum = Number(conversionRate);
     const apartmentPriceNum = Number(apartmentPrice);
-    const planData = calculatePaymentPlan50(apartmentPriceNum, conversionRateNum, currency);
+    
+    let planData; 
 
+    // Determine which payment plan calculation to use based on percentFinancing
+    switch (percentFinancing) {
+      case 50:
+        planData = calculatePaymentPlan50(apartmentPriceNum, conversionRateNum, currency);
+        break;
+      case 75:
+        planData = calculatePaymentPlan75(apartmentPriceNum, conversionRateNum, currency);
+        break;
+      case 70:
+        planData = calculatePaymentPlan70(apartmentPriceNum, conversionRateNum, currency);
+        break;
+      case 0:
+        planData = calculatePaymentPlan0(apartmentPriceNum, conversionRateNum, currency);
+        break;
+      default:
+        return res.status(400).json({ error: "Invalid percentFinancing value" });
+    }
+    
     // Generate PDF
    generatePDF(res, planData);
   } catch (error) {
