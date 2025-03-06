@@ -235,7 +235,7 @@ const closingCosts = {
   percentEquity: 10 + '%',
   percentBank: '',
   equityPaid: '',
-  bankFunded: 'Math.round(totalPriceUSD * .1)',
+  bankFunded: Math.round(totalPriceUSD * .1),
 };
 
 // Append blank row and totals row
