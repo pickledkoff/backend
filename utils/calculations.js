@@ -334,19 +334,41 @@ export function generatePDF(res, planData) {
     });
   
   // Move down after the banner
-  doc.moveDown(2);
+  doc.moveDown(1);
+
+  // Code for second banner
+  const firstColWidth = 150;  // This is the same as baseColWidths[0]
+  const bannerHeight = 40;    // Increase banner height if needed
   
-   // Draw apt details banner
-  const bannerHeight2 = 20;
-  doc.rect(startX, doc.y, doc.page.width - 2 * startX, bannerHeight2)
-    .fillAndStroke('#ADD8E6', '#000000');  // Light blue banner with black border
-  
-  doc.fillColor('#000000')
-    .fontSize(12)
-    .text('Current exchange rate: ' + planData.conversionRate + 'Purchase Price (USD): $' + planData.totalUSD, startX, doc.y + bannerHeight / 2 - 6, {
-      width: doc.page.width - 2 * startX,
-      align: 'center'
-    });
+  // Record the current Y coordinate for our banner's top
+  const bannerY = doc.y;
+
+  // Draw the banner as a rectangle, with the width equal to the first column only
+  doc.rect(startX, bannerY, firstColWidth, bannerHeight)
+    .fillAndStroke('#ADD8E6', '#000000');  // Light blue background with black border
+
+  // Set up font and fill style for the text
+  doc.fillColor('#000000').fontSize(10);
+
+  // Define a small padding from the top of the banner for the first line of text
+  const textPadding = 4;
+  const lineSpacing = 12; // spacing between lines (adjust as needed)
+
+  // Write three lines of text inside the banner; center each within the banner's width
+  doc.text('Current exchange rate: ' + planData.conversionRate, startX, bannerY + textPadding, {
+    width: firstColWidth,
+    align: 'center'
+  });
+
+  doc.text('Purchase Price (USD): $' + planData.totalUSD, startX, bannerY + textPadding + lineSpacing, {
+    width: firstColWidth,
+    align: 'center'
+  });
+
+  doc.text('Purchase Price (ILS): ' + planData.totalILS, startX, bannerY + textPadding + 2 * lineSpacing, {
+    width: firstColWidth,
+    align: 'center'
+  });
   
   // Define columns
   const tableTop = doc.y;
