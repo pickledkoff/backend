@@ -337,8 +337,8 @@ export function generatePDF(res, planData) {
   doc.moveDown(2);
   
    // Draw apt details banner
-  const bannerHeight = 20;
-  doc.rect(startX, doc.y, doc.page.width - 2 * startX, bannerHeight)
+  const bannerHeight2 = 20;
+  doc.rect(startX, doc.y, doc.page.width - 2 * startX, bannerHeight2)
     .fillAndStroke('#ADD8E6', '#000000');  // Light blue banner with black border
   
   doc.fillColor('#000000')
