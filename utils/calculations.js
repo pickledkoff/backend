@@ -317,99 +317,104 @@ export function generatePDF(res, planData) {
   // Define startX early so it's available throughout.
   const startX = doc.page.margins.left; // e.g., 50
 
-  // ---------------------------
-  // Build Header Row with two parts:
-  // Part A: Left banner with details (apt details banner)
-  // Part B: Payment Plan Title to the right of it
-  // ---------------------------
+  // ---------------------------------------------------
+  // Draw the left banner with apt details (yellow background)
+  // ---------------------------------------------------
   const firstColWidth = 150;  // width of the left banner
-  const bannerHeight2 = 40;   // height for the left banner
-  const headerY = doc.y;      // current y for our header row
-  const gap = 10;             // gap between the banner and the title
+  const bannerHeight2 = 40;   // banner height for apt details
+  const currentY = doc.y;     // current y position
   
-  // Draw the left banner (apt details banner)
-  doc.rect(startX, headerY, firstColWidth, bannerHeight2)
-    .fillAndStroke('#ADD8E6', '#000000');  // Light blue fill with black border
+  // Fill left banner with yellow (#FFFF00) and add a black border.
+  doc.rect(startX, currentY, firstColWidth, bannerHeight2)
+    .fillAndStroke('#FFFF00', '#000000');
   
-  // Set smaller font for details inside the banner
+  // Set up font style for details inside the banner
   doc.fillColor('#000000').fontSize(10);
-  
   const textPadding = 4;
-  const lineSpacing = 12; // adjust if needed
+  const lineSpacing = 12;
   
-  doc.text('Current exchange rate: ' + planData.conversionRate, startX, headerY + textPadding, {
+  // Add commas to the purchase prices by formatting the numbers.
+  // (Uses the helper function formatNumber defined below.)
+  doc.text('Current exchange rate: ' + planData.conversionRate, startX, currentY + textPadding, {
     width: firstColWidth,
     align: 'center'
   });
   
-  doc.text('Purchase Price (USD): $' + planData.totalPriceUSD, startX, headerY + textPadding + lineSpacing, {
-    width: firstColWidth,
-    align: 'center'
-  });
+  doc.text(
+    'Purchase Price (USD): $' + formatNumber(planData.totalPriceUSD),
+    startX,
+    currentY + textPadding + lineSpacing,
+    { width: firstColWidth, align: 'center' }
+  );
   
-  doc.text('Purchase Price (ILS): ' + planData.totalPriceILS, startX, headerY + textPadding + 2 * lineSpacing, {
-    width: firstColWidth,
-    align: 'center'
-  });
+  doc.text(
+    'Purchase Price (ILS): ' + formatNumber(planData.totalPriceILS),
+    startX,
+    currentY + textPadding + 2 * lineSpacing,
+    { width: firstColWidth, align: 'center' }
+  );
   
-  // Draw the Payment Plan title to the right of the left banner
-  // Adjust vertical alignment: here we center the title vertically relative to the left banner.
-  const titleX = startX + firstColWidth + gap;
+  // ---------------------------------------------------
+  // Draw "Payment Plan" title centered on the page.
+  // We move a little bit below the left banner.
+  // ---------------------------------------------------
+  doc.moveDown(2);
   doc.font('Helvetica-Bold').fontSize(16);
-  // To vertically center, we use bannerHeight2/2 minus roughly half the font size
-  const titleY = headerY + bannerHeight2 / 2 - 8; 
-  doc.text('Payment Plan', titleX, titleY, {
-    // We can span to a width equal to the remaining width from startX to the right margin:
-    width: doc.page.width - startX - firstColWidth - gap,
-    align: 'left'
+  // Use the full available width (from margin to margin) and center the text.
+  doc.text('Payment Plan', startX, doc.y, {
+    width: doc.page.width - 2 * startX,
+    align: 'center'
   });
   
-  // Move down to end the header row.
-  // We'll set our new y position below the header row.
-  doc.y = headerY + bannerHeight2 + 20; // add extra spacing if desired
-  
-  // ---------------------------
-  // Now draw the other banner (financingPercent banner) full width below.
-  // ---------------------------
-  const bannerHeight = 30;
-  doc.rect(startX, doc.y, doc.page.width - 2 * startX, bannerHeight)
-    .fillAndStroke('#ADD8E6', '#000000');  // Light blue banner with black border
-  
-  // Draw text inside the financing banner
-  doc.fillColor('#000000')
-    .fontSize(12)
-    .text(planData.bannerText, startX, doc.y + bannerHeight / 2 - 6, {
-      width: doc.page.width - 2 * startX,
-      align: 'center'
-    });
-  
-  // Move down after the banner
+  // Add some vertical spacing after the title.
   doc.moveDown(1);
   
-  // ---------------------------
-  // Define columns for the rest of your table
-  // ---------------------------
-  const tableTop = doc.y;
+  // ---------------------------------------------------
+  // Define table column widths. (The table will be drawn below.)
+  // This will also be used to set the exact width of the financing banner.
+  // ---------------------------------------------------
   const baseColWidths = [150, 100, 100, 100, 100];
   const headers = planData.header;
+  // Adjust column width if the header text includes "percent"
   const colWidths = headers.map((header, i) =>
     header.toLowerCase().includes("percent") ? baseColWidths[i] * 0.8 : baseColWidths[i]
   );
   
+  // Compute the total width of the table (sum of columns widths)
+  const tableWidth = colWidths.reduce((sum, width) => sum + width, 0);
+  
+  // ---------------------------------------------------
+  // Draw financing banner above the table. Its width now matches the table.
+  // ---------------------------------------------------
+  const bannerHeight = 30;
+  let bannerY = doc.y;  // current y position
+  
+  doc.rect(startX, bannerY, tableWidth, bannerHeight)
+    .fillAndStroke('#ADD8E6', '#000000');  // Light blue background with black border
+  
+  doc.fillColor('#000000')
+    .fontSize(12)
+    .text(planData.bannerText, startX, bannerY + bannerHeight / 2 - 6, {
+      width: tableWidth,
+      align: 'center'
+    });
+  
+  doc.moveDown(1);
+  
+  // ---------------------------------------------------
+  // Build table header and rows
+  // ---------------------------------------------------
+  const tableTop = doc.y;
   const colX = [];
   colX[0] = startX;
   for (let i = 1; i < colWidths.length; i++) {
     colX[i] = colX[i - 1] + colWidths[i - 1];
   }
   
-  const headerHeight = 30; // Header cell height for wrapping
-  
-  // Draw centered headers with vertical centering
+  const headerHeight = 30; // Header cell height
   doc.fontSize(10).font('Helvetica-Bold');
   headers.forEach((headerText, index) => {
-    const textHeight = doc.heightOfString(headerText, {
-      width: colWidths[index] - 10
-    });
+    const textHeight = doc.heightOfString(headerText, { width: colWidths[index] - 10 });
     const textY = tableTop + (headerHeight - textHeight) / 2;
     doc.text(headerText, colX[index] + 5, textY, {
       width: colWidths[index] - 10,
@@ -417,20 +422,20 @@ export function generatePDF(res, planData) {
     });
   });
   
-  // Draw header border
+  // Draw header borders
   for (let i = 0; i < colWidths.length; i++) {
     doc.rect(colX[i], tableTop, colWidths[i], headerHeight).stroke();
   }
   
-  let currentY = tableTop + headerHeight;
+  let currentYTable = tableTop + headerHeight;
   doc.font('Helvetica').fontSize(10);
-  const keys = planData.keys; // Should match the headers order
+  const keys = planData.keys; // Should match the header order
   
   // Draw data rows
   planData.rows.forEach((row) => {
     const rowHeight = 20;
     for (let i = 0; i < colWidths.length; i++) {
-      doc.rect(colX[i], currentY, colWidths[i], rowHeight).stroke();
+      doc.rect(colX[i], currentYTable, colWidths[i], rowHeight).stroke();
     }
     
     keys.forEach((key, idx) => {
@@ -442,7 +447,7 @@ export function generatePDF(res, planData) {
         if (isNaN(num) || num === 0) {
           cellValue = "";
         } else {
-          cellValue = { money: num }; // wrap in object to format later.
+          cellValue = { money: num };
         }
       } else {
         if (cellValue == null) {
@@ -454,26 +459,26 @@ export function generatePDF(res, planData) {
       
       const align = idx === 0 ? 'center' : 'right';
       if (isMoneyColumn && typeof cellValue === 'object') {
-        doc.text('$', colX[idx] + 5, currentY + 5, { width: 10, align: 'left' });
-        doc.text(formatNumber(cellValue.money), colX[idx] + 15, currentY + 5, {
+        // Render '$' left-aligned in a fixed width area, then right-align the number.
+        doc.text('$', colX[idx] + 5, currentYTable + 5, { width: 10, align: 'left' });
+        doc.text(formatNumber(cellValue.money), colX[idx] + 15, currentYTable + 5, {
           width: colWidths[idx] - 20,
           align: 'right'
         });
       } else {
         const textAlignAdjust = align === 'right' ? 5 : 0;
-        doc.text(cellValue, colX[idx] + 5, currentY + 5, {
+        doc.text(cellValue, colX[idx] + 5, currentYTable + 5, {
           width: colWidths[idx] - 10 - textAlignAdjust,
           align: align
         });
       }
     });
     
-    currentY += rowHeight;
+    currentYTable += rowHeight;
   });
   
   doc.end();
 }
-
 // Helper to format numbers with commas and no decimals.
 function formatNumber(amount) {
   return new Intl.NumberFormat('en-US', {
