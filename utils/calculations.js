@@ -360,12 +360,12 @@ export function generatePDF(res, planData) {
     align: 'center'
   });
 
-  doc.text('Purchase Price (USD): $' + planData.totalUSD, startX, bannerY + textPadding + lineSpacing, {
+  doc.text('Purchase Price (USD): $' + planData.totalPriceUSD, startX, bannerY + textPadding + lineSpacing, {
     width: firstColWidth,
     align: 'center'
   });
 
-  doc.text('Purchase Price (ILS): ' + planData.totalILS, startX, bannerY + textPadding + 2 * lineSpacing, {
+  doc.text('Purchase Price (ILS): ' + planData.totalPriceILS, startX, bannerY + textPadding + 2 * lineSpacing, {
     width: firstColWidth,
     align: 'center'
   });
