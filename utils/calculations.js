@@ -320,39 +320,49 @@ export function generatePDF(res, planData) {
   // ---------------------------------------------------
   // Draw the left banner with apt details (yellow background)
   // ---------------------------------------------------
-  const firstColWidth = 180;  // width of the left banner
-  const bannerHeight2 = 60;   // banner height for apt details
-  const currentY = doc.y;     // current y position
-  
-  // Fill left banner with yellow (#FFFF00) and add a black border.
-  doc.rect(startX, currentY, firstColWidth, bannerHeight2)
-    .fillAndStroke('#FFFF00', '#000000');
-  
-  // Set up font style for details inside the banner
-  doc.fillColor('#000000').fontSize(8);
-  const textPadding = 4;
-  const lineSpacing = 10;
-  
-  // Add commas to the purchase prices by formatting the numbers.
-  // (Uses the helper function formatNumber defined below.)
-  doc.text('Current exchange rate: ' + planData.conversionRate, startX, currentY + textPadding, {
-    width: firstColWidth,
-    align: 'center'
-  });
-  
-  doc.text(
-    'Purchase Price (USD): $' + formatNumber(planData.totalPriceUSD),
-    startX,
-    currentY + textPadding + lineSpacing,
-    { width: firstColWidth, align: 'center' }
-  );
-  
-  doc.text(
-    'Purchase Price (ILS): ' + formatNumber(planData.totalPriceILS),
-    startX,
-    currentY + textPadding + 2 * lineSpacing,
-    { width: firstColWidth, align: 'center' }
-  );
+  const firstColWidth = 150;   // width of the left banner
+const bannerHeight2 = 50;    // height for the left banner
+const currentY = doc.y;      // current y position for the left banner
+
+// Draw the left banner with a yellow background and black border.
+doc.rect(startX, currentY, firstColWidth, bannerHeight2)
+  .fillAndStroke('#FFFF00', '#000000');
+
+// Set font styling
+const detailFontSize = 8;
+doc.fillColor('#000000').fontSize(detailFontSize);
+
+// Define a fixed line spacing (you can adjust if needed)
+const lineSpacing = 4;
+
+// Measure the height of one line of text using a typical sample text.
+const measuredLineHeight = doc.heightOfString('M', { width: firstColWidth });
+
+// There are 3 lines; compute total text height.
+const numberOfLines = 3;
+const totalTextHeight = numberOfLines * measuredLineHeight + (numberOfLines - 1) * lineSpacing;
+
+// Compute vertical padding so that the text block is centered in the banner.
+const verticalPadding = (bannerHeight2 - totalTextHeight) / 2;
+
+// Prepare formatted strings that include commas.
+const exchangeRateText = 'Current exchange rate: ' + planData.conversionRate;
+const usdText = 'Purchase Price (USD): $' + formatNumber(planData.totalPriceUSD);
+const ilsText = 'Purchase Price (ILS): ' + formatNumber(planData.totalPriceILS);
+
+// Write the three lines of text with vertical centering.
+doc.text(exchangeRateText, startX, currentY + verticalPadding, {
+  width: firstColWidth,
+  align: 'center'
+});
+doc.text(usdText, startX, currentY + verticalPadding + measuredLineHeight + lineSpacing, {
+  width: firstColWidth,
+  align: 'center'
+});
+doc.text(ilsText, startX, currentY + verticalPadding + 2 * (measuredLineHeight + lineSpacing), {
+  width: firstColWidth,
+  align: 'center'
+});
   
   // ---------------------------------------------------
   // Draw "Payment Plan" title centered on the page.
